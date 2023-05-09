@@ -8,23 +8,24 @@
 # and since I can't dorm with most of the people posting, I want a page just for Muir College Class of 2027
 # This will make things a lot more manageable and easier to find a roommate.
 
-# ACCOUNT INFO
-email = "p1long@ucsd.edu"
-fullname = "John Muir"
-username = "muircollege2027"
-password = "UEcYN9e7i85nmKpquAaB"
-birthday = "September 19, 1967"
+# python ~/finding_a_roommate/bot.py driver_address username password
+
+# driver_address = filepath to Selenium Chrome Web Driver, download at: https://chromedriver.chromium.org/downloads
+# username = Instagram username
+# password = Instagram password
+
 
 # IMPORTS
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions
-from selenium.webdriver.common.keys import Keys
-from webdriver_manager.chrome import ChromeDriverManager
-import os
-import time
 import numpy
+from time import sleep
+import sys
+
+# ARGUMENTS
+# sys.argv = ("bot.py", "/Users/philliplong/Desktop/Coding/chromedriver", "", "")
+driver_address = sys.argv[1] # driver_address
+username = sys.argv[2] # username
+password = sys.argv[3] # password
 
 # create instance of chrome driver
 driver = webdriver.Chrome(executable_path = "/Users/philliplong/Desktop/Coding/chromedriver")
