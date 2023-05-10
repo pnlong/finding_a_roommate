@@ -16,18 +16,19 @@
 
 
 # IMPORTS
-from selenium import webdriver
-import numpy
-from time import sleep
-import sys
+from login import instagram_driver # my own class that logs into instagram for me while creating a driver
+import sys # for stdin arguments
+import numpy # for storing data
 
 # ARGUMENTS
-# sys.argv = ("bot.py", "/Users/philliplong/Desktop/Coding/chromedriver", "", "")
+# sys.argv = ("bot.py", "/Users/philliplong/Desktop/Coding/chromedriver", "jcreek_rec", "phillip5143")
 driver_address = sys.argv[1] # driver_address
 username = sys.argv[2] # username
 password = sys.argv[3] # password
 
-# create instance of chrome driver
-driver = webdriver.Chrome(executable_path = "/Users/philliplong/Desktop/Coding/chromedriver")
+# CREATE DRIVER
+driver = instagram_driver(driver_address = driver_address, username = username, password = password) # create instance of chrome driver
 
-
+print("hello")
+driver.wait(3, 5)
+print("world")

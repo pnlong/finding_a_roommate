@@ -12,8 +12,15 @@
 
 
 # IMPORTS
+from login import instagram_driver # my own class that logs into instagram for me while creating a driver
+import sys # for stdin arguments
+import numpy # for storing data
 
+# ARGUMENTS
+# sys.argv = ("bot.py", "/Users/philliplong/Desktop/Coding/chromedriver", "", "")
+driver_address = sys.argv[1] # driver_address
+username = sys.argv[2] # username
+password = sys.argv[3] # password
 
-# VARIABLES
-
-
+# CREATE DRIVER
+driver = instagram_driver(driver_address = driver_address, username = username, password = password) # create instance of chrome driver
