@@ -29,6 +29,4 @@ password = sys.argv[3] # password
 # CREATE DRIVER
 driver = instagram_driver(driver_address = driver_address, username = username, password = password) # create instance of chrome driver
 
-print("hello")
-driver.wait(3, 5)
-print("world")
+

@@ -38,16 +38,22 @@ The main bot that reads Instagram DMs and posts snippets and pictures of admitte
 python ~/finding_a_roommate/bot.py driver_address username password
 ```
 where:
+
 - `driver_address` is the filepath to a *Selenium Chrome Web Driver*, which can be downloaded at (https://chromedriver.chromium.org/downloads). *Note that Chrome Driver version must match the version of Chrome installed on the computer*, or `bot.py` will not be able to run correctly.
 - `username` is the username of the account which `bot.py` will take control of.
 - `password` is the password to the aforementioned account.
 
+
 ### *login.py*
-Contains a class which creates a Selenium window and logs into instagram. Instances of this class then be used by `bot.py` and/or `find_accounts.py`. This program has no arguments.
+Contains a class which creates a Selenium window and logs into instagram. Instances of this class can then be used by `bot.py` and/or `find_accounts.py`. This program has no arguments.
 
 ### *find_accounts.py*
 Scrapes the @**ucsandiego.2027** account to find incoming Muir students, and makes note of their Instagram handles. Run with:
 ```
-python ~/finding_a_roommate/find_accounts.py driver_address username password
+python ~/finding_a_roommate/find_accounts.py driver_address username password username_to_scrape
 ```
-The arguments are the same as `bot.py`. See above.
+where:
+
+- `username_to_scrape` is the username to the Instagram account that will be scraped for information.
+
+The first three arguments are the same as `bot.py`. See above for those arguments.
