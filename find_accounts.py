@@ -28,7 +28,7 @@ username_to_scrape = sys.argv[4].replace("@", "") # username_to_scrape, remove @
 driver = instagram_driver(driver_address = driver_address, username = username, password = password) # create instance of chrome driver
 
 # CLICK SEARCH BUTTON TO FIND ACCOUNT
-search_button = driver.driver.find_element_by_xpath("//a[@class='x1i10hfl xjbqb8w x6umtig x1b1mbwd xaqea5y xav7gou x9f619 x1ypdohk xt0psk2 xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x16tdsg8 x1hl2dhg xggy1nq x1a2a7pz _a6hd']")
+search_button = driver.driver.find_element_by_xpath("//div[@class='x1n2onr6 x6s0dn4 x78zum5']")
 search_button.click()
 del search_button
 driver.wait(2, 3)
