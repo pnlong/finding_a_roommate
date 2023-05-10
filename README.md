@@ -30,7 +30,7 @@ Hopefully this project will be done by May 15th, which is the beginning of the h
 ---
 
 ## Programs
-The various programs that will help me find a roommate.
+The various programs that will help me find a roommate. These programs seem to require a strong internet connection, since on weak connections, Selenium tries to perform actions before a page is fully loaded, causing the code to break.
 
 ### *bot.py*
 The main bot that reads Instagram DMs and posts snippets and pictures of admittees to the Instagram account. Run with:
