@@ -35,7 +35,7 @@ class instagram_driver:
         self.login()
         
         # add some wait time
-        self.wait(4, 5)
+        self.wait(3, 4)
     
         
     # LOGIN TO INSTAGRAM
@@ -48,40 +48,45 @@ class instagram_driver:
         # enter username
         self.simulate_typing(element = self.driver.find_element_by_xpath("//input[@aria-label='Phone number, username, or email']"),
                              text = self.username)
-        self.wait(0.5, 3)
+        self.wait(0.5, 2.5)
         
         # enter password
         self.simulate_typing(element = self.driver.find_element_by_xpath("//input[@aria-label='Password']"),
                              text = self.password)
-        self.wait(0.5, 3)
+        self.wait(0.5, 2.5)
         
         # click login button, get sent to new page
         login = self.driver.find_element_by_xpath("//button[@class='_acan _acap _acas _aj1-']")
         login.click()
         del login
-        self.driver.implicitly_wait(20) # give time for new page to load
         self.wait(5, 7)
         
-        # deal with "Save Your Login Info?" popup, choose "Save Info" button
-        save_login_popup = self.driver.find_element_by_xpath("//button[@class='_acan _acap _acas _aj1-']")
-        save_login_popup.click()
-        del save_login_popup
-        self.wait(2, 4)
+        # deal with "Save Your Login Info?" popup if present, choose "Save Info" button
+        try:
+            save_login_popup = self.driver.find_element_by_xpath("//button[@class='_acan _acap _acas _aj1-']")
+            save_login_popup.click()
+            del save_login_popup
+            self.wait(2.5, 4)
+        except:
+            pass
         
-        # deal with "Turn on Notifications" popup, choose "Not Now" button
-        notifications_popup = self.driver.find_element_by_xpath("//button[@class='_a9-- _a9_1']")
-        notifications_popup.click()
-        del notifications_popup
-        self.wait(5, 6)
+        # deal with "Turn on Notifications" popup if present, choose "Not Now" button
+        try:
+            notifications_popup = self.driver.find_element_by_xpath("//button[@class='_a9-- _a9_1']")
+            notifications_popup.click()
+            del notifications_popup
+            self.wait(3, 4)
+        except:
+            pass
         
         # do a quick scrolling jittery action to fool ReCAPTCHA
-        yi = 0 # initial y
-        for i in range(int(uniform(0, 5))): # (inclusive, exlusive), determine number of scrolling movements
-            yd = int(uniform(0, 300)) # change in y
+        yi, yd, yf = 0, 0, 0 # initial y
+        for i in range(int(uniform(0, 3))): # (inclusive, exlusive), determine number of scrolling movements
+            yd = int(uniform(0, 50)) # change in y
             yf = (yi + yd) if i % 2 == 0 else (yi - yd) # scroll up or down depending on iteration number
             yf = 0 if yf < 0 else yf # final y, set to 0 if negative because we can't scroll negative
             self.driver.execute_script(f"window.scrollTo({yi}, {yf})") # conduct scrolling action
-            self.wait(0.05, 0.15)
+            self.wait(0.4, 0.5)
         del yi, yd, yf
     
     # HELPER FUNCTIONS

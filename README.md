@@ -50,10 +50,11 @@ Contains a class which creates a Selenium window and logs into instagram. Instan
 ### *find_accounts.py*
 Scrapes the @**ucsandiego.2027** account to find incoming Muir students, and makes note of their Instagram handles. Run with:
 ```
-python ~/finding_a_roommate/find_accounts.py driver_address username password username_to_scrape
+python ~/finding_a_roommate/find_accounts.py driver_address username password username_to_scrape output_directory
 ```
 where:
 
 - `username_to_scrape` is the username to the Instagram account that will be scraped for information.
+- `output_directory` is the filepath to the folder that `find_accounts.py` will output to.
 
 The first three arguments are the same as `bot.py`. See above for those arguments.
