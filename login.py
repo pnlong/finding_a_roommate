@@ -10,6 +10,9 @@ from selenium import webdriver
 from time import sleep
 from random import uniform
 
+# VARIABLES
+m = 12 # pixels moved per scroll movement
+
 # CREATE THE CLASS
 class instagram_driver:
     
@@ -66,7 +69,7 @@ class instagram_driver:
             save_login_popup = self.driver.find_element_by_xpath("//button[@class='_acan _acap _acas _aj1-']")
             save_login_popup.click()
             del save_login_popup
-            self.wait(2.5, 4)
+            self.wait(3, 5)
         except:
             pass
         
@@ -80,14 +83,15 @@ class instagram_driver:
             pass
         
         # do a quick scrolling jittery action to fool ReCAPTCHA
-        yi, yd, yf = 0, 0, 0 # initial y
+        yi, yd, yf = 0, 0, 0 # initial y, change in y, final y
         for i in range(int(uniform(0, 3))): # (inclusive, exlusive), determine number of scrolling movements
-            yd = int(uniform(0, 50)) # change in y
+            yd = int(uniform(m + 1, 50)) # change in y
             yf = (yi + yd) if i % 2 == 0 else (yi - yd) # scroll up or down depending on iteration number
             yf = 0 if yf < 0 else yf # final y, set to 0 if negative because we can't scroll negative
-            self.driver.execute_script(f"window.scrollTo({yi}, {yf})") # conduct scrolling action
+            self.scroll(a = yi, b = yf) # conduct scrolling action
             self.wait(0.4, 0.5)
         del yi, yd, yf
+    
     
     # HELPER FUNCTIONS
     
@@ -109,4 +113,16 @@ class instagram_driver:
             self.wait(0.1, 0.25)
             
         del letter, first_iter
-    
+        
+    # a function that scrolls from point a to point b in a "natural" way
+    def scroll(self, a, b):
+        n = (b - a) // m # number of iterations
+        d = n / abs(n) # direction of scroll
+        for i in range(abs(n)):
+            self.driver.execute_script(f"window.scrollTo({a}, {a + (d * m)})") # conduct scrolling action
+            a += d * m # recalculate a
+            self.wait(0.04, 0.11)
+        
+        self.driver.execute_script(f"window.scrollTo({a}, {a + ((b - a) % m)})") # scroll the last little bit
+        
+        del a, b, d, n
