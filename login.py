@@ -49,24 +49,24 @@ class instagram_driver:
         self.wait(4, 5)
         
         # enter username
-        self.simulate_typing(element = self.driver.find_element_by_xpath("//input[@aria-label='Phone number, username, or email']"),
+        self.simulate_typing(element = self.driver.find_element("xpath", "//input[@aria-label='Phone number, username, or email']"),
                              text = self.username)
         self.wait(0.5, 2.5)
         
         # enter password
-        self.simulate_typing(element = self.driver.find_element_by_xpath("//input[@aria-label='Password']"),
+        self.simulate_typing(element = self.driver.find_element("xpath", "//input[@aria-label='Password']"),
                              text = self.password)
         self.wait(0.5, 2.5)
         
         # click login button, get sent to new page
-        login = self.driver.find_element_by_xpath("//button[@class='_acan _acap _acas _aj1-']")
+        login = self.driver.find_element("xpath", "//button[@class='_acan _acap _acas _aj1-']")
         login.click()
         del login
         self.wait(5, 7)
         
         # deal with "Save Your Login Info?" popup if present, choose "Save Info" button
         try:
-            save_login_popup = self.driver.find_element_by_xpath("//button[@class='_acan _acap _acas _aj1-']")
+            save_login_popup = self.driver.find_element("xpath", "//button[@class='_acan _acap _acas _aj1-']")
             save_login_popup.click()
             del save_login_popup
             self.wait(3, 5)
@@ -75,7 +75,7 @@ class instagram_driver:
         
         # deal with "Turn on Notifications" popup if present, choose "Not Now" button
         try:
-            notifications_popup = self.driver.find_element_by_xpath("//button[@class='_a9-- _a9_1']")
+            notifications_popup = self.driver.find_element("xpath", "//button[@class='_a9-- _a9_1']")
             notifications_popup.click()
             del notifications_popup
             self.wait(3, 4)
@@ -117,7 +117,7 @@ class instagram_driver:
     # a function that scrolls from point a to point b in a "natural" way
     def scroll(self, a, b):
         n = (b - a) // m # number of iterations
-        d = n / abs(n) # direction of scroll
+        d = n / abs(n) if n != 0 else 0.0 # direction of scroll
         for i in range(abs(n)):
             self.driver.execute_script(f"window.scrollTo({a}, {a + (d * m)})") # conduct scrolling action
             a += d * m # recalculate a
