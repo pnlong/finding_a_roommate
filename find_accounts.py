@@ -35,9 +35,7 @@ driver = instagram_driver(driver_address = driver_address, username = username, 
 
 
 # CLICK SEARCH BUTTON TO FIND ACCOUNT
-search_button = driver.driver.find_element("xpath", "//a[@href='#']")
-search_button.click()
-del search_button
+driver.driver.find_element("xpath", "//a[@href='#']").click()
 driver.wait(2, 3)
 
 # FIND DESIRED INSTAGRAM ACCOUNT
@@ -46,9 +44,7 @@ driver.simulate_typing(element = driver.driver.find_element("xpath", "//input[@a
 driver.wait(1, 2)
 
 # GO TO DESIRED INSTAGRAM ACCOUNT
-desired_account = driver.driver.find_element("xpath", f"//a[@href='/{username_to_scrape}/']")
-desired_account.click() # click on account with the correct username
-del desired_account
+driver.driver.find_element("xpath", f"//a[@href='/{username_to_scrape}/']").click() # click on account with the correct username
 driver.wait(3, 4)
 
 # SCROLL DOWN TO FIRST POST
@@ -56,10 +52,8 @@ driver.scroll(a = 0, b = 400)
 driver.wait(1.5, 3)
 
 # CLICK ON FIRST POST
-first_post = driver.driver.find_element("xpath", ".//a[contains(@href,'/p/')]") # finds all posts (href that contains "/p/"), returns the first one! 
-first_post.click()
-del first_post
-
+driver.driver.find_element("xpath", ".//a[contains(@href,'/p/')]").click() # finds all posts (href that contains "/p/"), returns the first one! 
+# wait time is added in loop
 
 # CREATE LIST OF ACCOUNT NAMES
 accounts_muir = set(()) # set of accounts that mention muir (no duplicates)

@@ -17,8 +17,6 @@ from login import instagram_driver # my own class that logs into instagram for m
 import sys # for stdin arguments
 from os.path import exists # for checking if files exist
 from os.path import dirname # for determining the output file
-from os import makedirs
-from re import sub # for string substitution
 
 # ARGUMENTS
 # sys.argv = ("bot.py", "/Users/philliplong/Desktop/Coding/chromedriver", "", "", "/Users/philliplong/Desktop/Coding/finding_a_roommate/outputs/accounts_muir.txt")
@@ -26,9 +24,70 @@ sys.argv = ("bot.py", "/Users/philliplong/Desktop/Coding/chromedriver", "jcreek_
 driver_address = sys.argv[1] # driver_address
 username = sys.argv[2].replace("@", "") # username, remove @ symbol if included
 password = sys.argv[3] # password
-accounts_to_dm = sys.argv[4] # muir_accounts.txt
+accounts_muir_output = sys.argv[4] # accounts_to_dm
 
 
 # CREATE DRIVER
 driver = instagram_driver(driver_address = driver_address, username = username, password = password) # create instance of chrome driver
 
+# CLICK ON DM BUTTON
+driver.driver.find_element("xpath", "//a[@href='/direct/inbox/']").click()
+driver.wait(2, 3)
+
+
+# READ IN FILES, CREATE SETS
+accounts_muir = set(()) # set of accounts that mention muir (no duplicates)
+if exists(accounts_muir_output):
+    for line in open(accounts_muir_output):
+        accounts_muir.add(str(line).strip())
+
+accounts_initiated_contact = set(()) # set of accounts that the program might have initiated contact with (no duplicates)
+accounts_initiated_contact_output = dirname(accounts_muir_output) + "/accounts_initiated_contact.txt"
+if exists(accounts_initiated_contact_output):
+    for line in open(accounts_initiated_contact_output):
+        accounts_initiated_contact.add(str(line).strip())
+        
+accounts_to_dm = set((account for account in accounts_muir if account not in accounts_initiated_contact))
+
+
+# DM ACCOUNTS
+message = ""
+first_account_to_dm = True
+for account in accounts_to_dm:
+    try:
+        
+        # CLICK ON NEW MESSAGE ICON
+        driver.driver.find_element("xpath", "//button[@class='_abl- _abm2']").click()
+        driver.wait(2, 4.5)
+        
+        # ENTER ACCCONT NAME
+        driver.simulate_typing(element = driver.driver.find_element("xpath", "//input[@name='queryBox'][@placeholder='Search...']"),
+                               text = account)
+        driver.wait(1, 2)
+
+        # SELECT ACCOUNT TO DM
+        driver.driver.find_element("xpath", f"//span[@class='x1lliihq x193iq5w x6ikm8r x10wlt62 xlyipyv xuxw1ft'][text()='{account}']").click()
+        driver.wait(1, 1.5)
+        
+        # CLICK ON NEXT BUTTON
+        driver.driver.find_element("xpath", "//button[@class='_acan _acao _acas _acav _aj1-']/div[text()='Next']").click()
+        driver.wait(4, 5)
+        
+        # LOCATE TEXT BOX, TYPE IN MESSAGE
+        if first_account_to_dm: # if first iteration, type out the message slowly
+            scalar = 3.0
+            first_account_to_dm = False # update boolean
+        else: # not the first iteration
+            scalar = 0.0
+
+        driver.simulate_typing(element = driver.driver.find_element("xpath", "//textarea[@placeholder='Message...']"),
+                               text = message, scalar = scalar)
+        driver.wait(1, 2)
+        
+        # SEND MESSAGE
+        
+
+    except:
+        driver.wait(3, 4) # if for some reason the account doesn't exist anymore or something, wait, and move on
+        continue
+        

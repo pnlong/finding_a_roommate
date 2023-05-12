@@ -100,7 +100,7 @@ class instagram_driver:
         sleep(uniform(lower, upper))
         
     # a function that types in a given text into a given text entry element like an actual human (one letter at a time)
-    def simulate_typing(self, element, text):
+    def simulate_typing(self, element, text, scalar = 1.0): # scalar is the speed of which it takes to type (scalar = 2 is double the time)
         first_iter = True
         
         for letter in text:
@@ -110,7 +110,7 @@ class instagram_driver:
                 first_iter = False
             
             element.send_keys(letter)
-            self.wait(0.1, 0.25)
+            self.wait(scalar * 0.1, scalar * 0.25) # scalar affects time between each character is entered
             
         del letter, first_iter
         
