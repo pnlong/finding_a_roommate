@@ -8,7 +8,7 @@
 # and since I can't dorm with most of the people posting, I want a page just for Muir College Class of 2027
 # This will make things a lot more manageable and easier to find a roommate.
 
-# python ~/finding_a_roommate/bot.py driver_address username password
+# python ~/finding_a_roommate/bot.py driver_address username password output_directory
 
 # driver_address = filepath to Selenium Chrome Web Driver, download at: https://chromedriver.chromium.org/downloads
 # username = Instagram username
@@ -26,7 +26,12 @@ driver_address = sys.argv[1] # driver_address
 username = sys.argv[2] # username
 password = sys.argv[3] # password
 
-# CREATE DRIVER
+# CREATE DRIVER AND LOGIN
 driver = instagram_driver(driver_address = driver_address, username = username, password = password) # create instance of chrome driver
+driver.login()
+
+# GO TO DMS
+driver.click_messages()
+
 
 

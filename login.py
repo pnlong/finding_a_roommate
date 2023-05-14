@@ -33,14 +33,9 @@ class instagram_driver:
         self.username = username
         self.password = password
         
-        # call login function (see below)
-        self.wait(0.5, 1.5)
-        self.login()
-        
-        # add some wait time
-        self.wait(3, 4)
     
-        
+    # MAIN FUNCTIONS
+    
     # LOGIN TO INSTAGRAM
     def login(self):
         
@@ -91,6 +86,18 @@ class instagram_driver:
             self.scroll(a = yi, b = yf) # conduct scrolling action
             self.wait(0.4, 0.5)
         del yi, yd, yf
+        
+        self.wait(3, 4)
+    
+    # click on the search button on side tab
+    def click_search(self):
+        self.driver.find_element("xpath", "//a[@href='#']").click()
+        self.wait(2, 3)
+    
+    # click on the messages button on side tab
+    def click_messages(self):
+        self.driver.find_element("xpath", "//a[@href='/direct/inbox/']").click()
+        self.wait(2, 3)
     
     
     # HELPER FUNCTIONS

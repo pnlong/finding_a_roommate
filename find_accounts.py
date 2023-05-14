@@ -30,15 +30,12 @@ username_to_scrape = sys.argv[4].replace("@", "") # username_to_scrape, remove @
 output_directory = sys.argv[5] if sys.argv[5].endswith("/") else sys.argv[5] + "/" # directory to output to
 
 
-# CREATE DRIVER
+# CREATE DRIVER AND LOGIN
 driver = instagram_driver(driver_address = driver_address, username = username, password = password) # create instance of chrome driver
+driver.login()
 
-
-# CLICK SEARCH BUTTON TO FIND ACCOUNT
-driver.driver.find_element("xpath", "//a[@href='#']").click()
-driver.wait(2, 3)
-
-# FIND DESIRED INSTAGRAM ACCOUNT
+# CLICK SEARCH BUTTON TO FIND ACCOUNT AND ENTER DESIRED INSTAGRAM ACCOUNT
+driver.click_search()
 driver.simulate_typing(element = driver.driver.find_element("xpath", "//input[@aria-label='Search input']"),
                        text = username_to_scrape)
 driver.wait(1, 2)
