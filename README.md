@@ -4,7 +4,7 @@ Creates an Instagram bot in charge of posting pictures and informational snippet
 
 ## Background
 
-I was recently admitted to UC San Diego as a Computer Science major in Muir College. Various Instagram accounts exist (for every college) that are meant to connect incoming freshmen with one another, with both the aim of finding new friends and discovering potential roommates. For UCSD specifically, the most prominent of many accounts is called @[ucsandiego.2027](https://www.instagram.com/ucsandiego.2027/). Posting over 10 times a day, countless incoming freshmen share snippets and pictures of themselves to this account. 
+I was recently admitted to UC San Diego as a Computer Science major in Muir College. Various Instagram accounts exist (for every college) that are meant to connect incoming freshmen with one another, with both the aim of finding new friends and discovering potential roommates. For UCSD specifically, the most prominent of many accounts is called [@ucsandiego.2027](https://www.instagram.com/ucsandiego.2027/). Posting over 10 times a day, countless incoming freshmen share snippets and pictures of themselves to this account. 
 
 However, UCSD's college system makes it difficult to find potential roommates -- my main objective -- on this account. For one, I can't dorm with someone of the opposite gender, and secondly, I can't dorm with someone who is not in my college (Muir, one of *eight* colleges at UCSD). This renders the significant majority of the posts on @**ucsandiego.2027** irrelevant (for my purposes). The page is chaotic to say the least...
 
