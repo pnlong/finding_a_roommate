@@ -75,6 +75,10 @@ for account in accounts_to_dm:
         driver.driver.find_element("xpath", "//button[@class='_acan _acao _acas _acav _aj1-']/div[text()='Next']").click()
         driver.wait(4, 5)
         
+        # CHECK IF THEY HAVE INITIATED CONTACT WITH ME ALREADY
+        if len(driver.driver.find_elements("xpath", "//div[@class='x9f619 xjbqb8w x78zum5 x168nmei x13lgxp2 x5pf9jr xo71vjh x1n2onr6 x1plvlek xryxfnj x1c4vz4f x2lah0s x1q0g3np xqjyukv xuk3077 x1oa3qoh x1nhvcw1']/div[@class='_ac72']/div/div/div[@class='_acqt _acqu']/div/div/div/div/*")) != 0:
+            continue
+        
         # SEND MESSAGE, ALSO DETERMINE HOW FAST TO TYPE
         if first_account_to_dm: # if first iteration, type out the message slowly
             scalar = 3.0
@@ -88,7 +92,9 @@ for account in accounts_to_dm:
 
 
     except:
-        driver.wait(3, 4) # if for some reason the account doesn't exist anymore or something, wait, and move on
+        driver.wait(1.5, 2) # if for some reason the account doesn't exist anymore or something, wait, and move on
+        driver.driver.find_element("xpath", "//div[@class='_abm0']/*[@aria-label='Close']").click()
+        driver.wait(1.5, 2)
         continue
         
 

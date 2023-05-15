@@ -53,17 +53,25 @@ driver.driver.find_element("xpath", ".//a[contains(@href,'/p/')]").click() # fin
 # wait time is added in loop
 
 # CREATE LIST OF ACCOUNT NAMES
-accounts_muir = set(()) # set of accounts that mention muir (no duplicates)
+# if output directory doesn't exist yet
+if not exists(output_directory):
+    makedirs(output_directory) # create the new directory
+
+# set of accounts that mention muir (no duplicates)
+accounts_muir = set(())
 accounts_muir_output = output_directory + "accounts_muir.txt" # note that output directory already has "/" on the end
 if exists(accounts_muir_output):
-    for line in open(accounts_muir_output):
+    for line in open(accounts_muir_output, "r"):
         accounts_muir.add(str(line).strip())
+accounts_muir_writable = open(accounts_muir_output, "w")
 
-accounts_already_scraped = set(()) # set of accounts that the program has already looked at (no duplicates)
+# set of accounts that the program has already looked at (no duplicates)
+accounts_already_scraped = set(())
 accounts_already_scraped_output = output_directory + "accounts_already_scraped.txt" # note that output directory already has "/" on the end
 if exists(accounts_already_scraped_output):
-    for line in open(accounts_already_scraped_output):
+    for line in open(accounts_already_scraped_output, "r"):
         accounts_already_scraped.add(str(line).strip())
+accounts_already_scraped_writable = open(accounts_already_scraped_output, "w")
 
 
 # FUNCTION FOR CLICKING TO NEXT POST
@@ -106,7 +114,8 @@ while True:
         next_post()
         continue
     else: # have not yet scraped this account
-        accounts_already_scraped.add(account) # add account to list
+        accounts_already_scraped.add(account)
+        accounts_already_scraped_writable.write(account + "\n")
 
     
     # CHECK DATE OF POST TO MAKE SURE POSTS ARE STILL RELEVANT
@@ -120,35 +129,45 @@ while True:
     
     
     # ADD SOME EXTRA WAIT TIME TO SIMULATE READING CAPTION
-    driver.wait(3.5, 5)
+    driver.wait(3, 5)
     
     
     # IF ACCOUNT MENTIONS MUIR, FOLLOW THEM
     if "muir" in caption:
-        try:
-            # MAKE NOTE OF CURRENT URL
-            current_url = str(driver.driver.current_url).split("/")
-            current_url = current_url[len(current_url) - 2]
+
+        # MAKE NOTE OF CURRENT URL
+        current_url = str(driver.driver.current_url).split("/")
+        current_url = current_url[len(current_url) - 2]
             
-            # CLICK ON ACCOUNT
-            driver.driver.find_element("xpath", f"//a[@href='/{account}/']").click()
-            driver.wait(2, 3)
+        # CLICK ON ACCOUNT
+        driver.driver.find_element("xpath", f"//a[@href='/{account}/']").click()
+        driver.wait(2, 3)
         
-            # SCROLL TO TOP OF PAGE IF NOT ALREADY THERE
-            driver.scroll(a = driver.driver.execute_script("return window.pageYOffset;"), b = 0)
-            driver.wait(0.5, 1)
+        # SCROLL TO TOP OF PAGE IF NOT ALREADY THERE
+        driver.scroll(a = driver.driver.execute_script("return window.pageYOffset;"), b = 0)
+        driver.wait(0.5, 1)
         
+        # IF ACCOUNT HAS BEEN DELETED OR SOMETHING
+        try:
             # CLICK FOLLOW
             driver.driver.find_element("xpath", "//button[@class='_acan _acap _acas _aj1-']").click()
             driver.wait(2, 3)
+            
+            # GO BACK
+            driver.driver.back()
+            
+            # ADD ACCOUNT TO ACCOUNTS_MUIR
+            accounts_muir.add(account)
+            accounts_muir_writable.write(account + "\n")
+            
         except:
-            pass
-        
-        # GO BACK
-        driver.driver.back()
-        
-        # ADD ACCOUNT TO ACCOUNTS_MUIR
-        accounts_muir.add(account)
+            # GO BACK
+            driver.driver.get(f"https://www.instagram.com/p/{current_url}/")
+            driver.wait(2, 2.5)
+            
+            # GO TO USERNAME_TO_SCRAPE
+            driver.driver.find_element("xpath", f"//a[@href='/{username_to_scrape}/'][@class='x1i10hfl xjqpnuy xa49m3k xqeqjp1 x2hbi6w xdl72j9 x2lah0s xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r x2lwn1j xeuugli x1hl2dhg xggy1nq x1ja2u2z x1t137rt x1q0g3np x1lku1pv x1a2a7pz x6s0dn4 xjyslct x1ejq31n xd10rxx x1sy0etr x17r0tee x9f619 x1ypdohk x1i0vuye xwhw2v2 xl56j7k x17ydfre x1f6kntn x2b8uid xlyipyv x87ps6o x14atkfc x1d5wrs8 x972fbf xcfux6l x1qhh985 xm0m39n xm3z3ea x1x8b98j x131883w x16mih1h xt7dq6l xexx8yu x4uap5 x18d9i69 xkhd6sd x1n2onr6 xjbqb8w x1n5bzlp xqnirrm xj34u2y x568u83 x3nfvp2']").click()
+            driver.wait(1, 1.3)
 
         # RELOCATE POST WE WERE JUST LOOKING AT
         driver.wait(0.75, 1.25)
@@ -165,7 +184,7 @@ while True:
                 driver.wait(1, 1.25)
                 back_to_post = True
             except: # back_to_post remains False
-                driver.scroll(a = a, b = a + scroll_per_iter)
+                driver.scroll(a = a, b = a + scroll_per_iter, scalar = 0.67)
                 a += scroll_per_iter # update a
                 driver.wait(0.75, 1)
         
@@ -180,15 +199,5 @@ while True:
 
 del date_of_post_is_valid
 
-
-# WRITE ACCOUNT LISTS TO FILES
-if not exists(output_directory): # if output directory doesn't exist yet
-    makedirs(output_directory) # create the new directory
-
-accounts_muir_writable = open(accounts_muir_output, "w")
-accounts_muir_writable.write("\n".join(accounts_muir))
 accounts_muir_writable.close()
-
-accounts_already_scraped_writable = open(accounts_already_scraped_output, "w")
-accounts_already_scraped_writable.write("\n".join(accounts_already_scraped))
 accounts_already_scraped_writable.close()

@@ -60,14 +60,14 @@ class instagram_driver:
         
         # deal with "Save Your Login Info?" popup if present, choose "Save Info" button
         try:
-            self.driver.find_element("xpath", "//button[@class='_acan _acap _acas _aj1-'][text()='Save Info']").click()
+            self.driver.find_element("xpath", "//button[text()='Save Info']").click()
             self.wait(3, 5)
         except:
             pass
         
         # deal with "Turn on Notifications" popup if present, choose "Not Now" button
         try:
-            self.driver.find_element("xpath", "//button[@class='_a9-- _a9_1'][text()='Not Now']").click()
+            self.driver.find_element("xpath", "//button[text()='Not Now']").click()
             self.wait(3, 4)
         except:
             pass
@@ -127,7 +127,7 @@ class instagram_driver:
         del letter, first_iter
         
     # a function that scrolls from point a to point b in a "natural" way
-    def scroll(self, a, b, element = None):
+    def scroll(self, a, b, scalar = s, element = None):
         n = (b - a) // m # number of iterations
         d = n / abs(n) if n != 0 else 0.0 # direction of scroll
         for i in range(abs(n)):
@@ -137,7 +137,7 @@ class instagram_driver:
             else:
                 self.driver.execute_script(f"arguments[0].scrollTo({a}, {a + (d * m)})", element)
             a += d * m # recalculate a
-            self.wait(0.04, 0.11)
+            self.wait(scalar * 0.04, scalar * 0.11)
         # scroll the last little bit
         if element is None:
             self.driver.execute_script(f"window.scrollTo({a}, {a + ((b - a) % m)})")
