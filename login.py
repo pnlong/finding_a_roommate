@@ -12,6 +12,7 @@ from random import uniform
 
 # VARIABLES
 m = 12 # pixels moved per scroll movement
+s = 1.0 # default scalar
 
 # CREATE THE CLASS
 class instagram_driver:
@@ -26,7 +27,7 @@ class instagram_driver:
             # if we make it this far (that is, if driver_address is valid), the driver window has been created
                         
         except: # invalid driver_address, quit program
-            print(f"Error: faulty driver_address argument.")
+            print("Error: faulty driver_address argument.")
             quit()
 
         # username and password
@@ -54,25 +55,19 @@ class instagram_driver:
         self.wait(0.5, 2.5)
         
         # click login button, get sent to new page
-        login = self.driver.find_element("xpath", "//button[@class='_acan _acap _acas _aj1-']")
-        login.click()
-        del login
+        self.driver.find_element("xpath", "//button[@class='_acan _acap _acas _aj1-']").click()
         self.wait(5, 7)
         
         # deal with "Save Your Login Info?" popup if present, choose "Save Info" button
         try:
-            save_login_popup = self.driver.find_element("xpath", "//button[@class='_acan _acap _acas _aj1-']")
-            save_login_popup.click()
-            del save_login_popup
+            self.driver.find_element("xpath", "//button[@class='_acan _acap _acas _aj1-'][text()='Save Info']").click()
             self.wait(3, 5)
         except:
             pass
         
         # deal with "Turn on Notifications" popup if present, choose "Not Now" button
         try:
-            notifications_popup = self.driver.find_element("xpath", "//button[@class='_a9-- _a9_1']")
-            notifications_popup.click()
-            del notifications_popup
+            self.driver.find_element("xpath", "//button[@class='_a9-- _a9_1'][text()='Not Now']").click()
             self.wait(3, 4)
         except:
             pass
@@ -91,7 +86,7 @@ class instagram_driver:
     
     # click on the search button on side tab
     def click_search(self):
-        self.driver.find_element("xpath", "//a[@href='#']").click()
+        self.driver.find_element("xpath", "//a[@href='#']/div/div/div/div/*[@aria-label='Search']").click()
         self.wait(2, 3)
     
     # click on the messages button on side tab
@@ -99,6 +94,16 @@ class instagram_driver:
         self.driver.find_element("xpath", "//a[@href='/direct/inbox/']").click()
         self.wait(2, 3)
     
+    # send a message; MUST BE IN MESSAGES PANE FOR THIS FUNCTION TO WORK
+    def send_message(self, text, scalar = s / 2):
+        # type in message
+        self.simulate_typing(element = self.driver.find_element("xpath", "//textarea[@placeholder='Message...']"),
+                             text = text, scalar = scalar)
+        self.wait(0.75, 1.5)
+        # send message
+        self.driver.find_element("xpath", "//div[@class='x1i10hfl xjqpnuy xa49m3k xqeqjp1 x2hbi6w xdl72j9 x2lah0s xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r x2lwn1j xeuugli x1hl2dhg xggy1nq x1ja2u2z x1t137rt x1q0g3np x1lku1pv x1a2a7pz x6s0dn4 xjyslct x1ejq31n xd10rxx x1sy0etr x17r0tee x9f619 x1ypdohk x1i0vuye xwhw2v2 xl56j7k x17ydfre x1f6kntn x2b8uid xlyipyv x87ps6o x14atkfc x1d5wrs8 x972fbf xcfux6l x1qhh985 xm0m39n xm3z3ea x1x8b98j x131883w x16mih1h xt0psk2 xt7dq6l xexx8yu x4uap5 x18d9i69 xkhd6sd x1n2onr6 xjbqb8w x1n5bzlp x173jzuc x1yc6y37'][@role='button']").click()
+        self.wait(1.5, 2.5)
+        
     
     # HELPER FUNCTIONS
     
@@ -107,7 +112,7 @@ class instagram_driver:
         sleep(uniform(lower, upper))
         
     # a function that types in a given text into a given text entry element like an actual human (one letter at a time)
-    def simulate_typing(self, element, text, scalar = 1.0): # scalar is the speed of which it takes to type (scalar = 2 is double the time)
+    def simulate_typing(self, element, text, scalar = s): # scalar is the speed of which it takes to type (scalar = 2 is double the time)
         first_iter = True
         
         for letter in text:
@@ -122,14 +127,21 @@ class instagram_driver:
         del letter, first_iter
         
     # a function that scrolls from point a to point b in a "natural" way
-    def scroll(self, a, b):
+    def scroll(self, a, b, element = None):
         n = (b - a) // m # number of iterations
         d = n / abs(n) if n != 0 else 0.0 # direction of scroll
         for i in range(abs(n)):
-            self.driver.execute_script(f"window.scrollTo({a}, {a + (d * m)})") # conduct scrolling action
+            # conduct scrolling action
+            if element is None:
+                self.driver.execute_script(f"window.scrollTo({a}, {a + (d * m)})")
+            else:
+                self.driver.execute_script(f"arguments[0].scrollTo({a}, {a + (d * m)})", element)
             a += d * m # recalculate a
             self.wait(0.04, 0.11)
-        
-        self.driver.execute_script(f"window.scrollTo({a}, {a + ((b - a) % m)})") # scroll the last little bit
+        # scroll the last little bit
+        if element is None:
+            self.driver.execute_script(f"window.scrollTo({a}, {a + ((b - a) % m)})")
+        else:
+            self.driver.execute_script(f"arguments[0].scrollTo({a}, {a + ((b - a) % m)})", element)
         
         del a, b, d, n

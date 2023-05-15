@@ -22,7 +22,7 @@ from os import makedirs
 from re import sub # for string substitution
 
 # ARGUMENTS
-# sys.argv = ("bot.py", "/Users/philliplong/Desktop/Coding/chromedriver", "jcreek_rec", "phillip5143", "ucsandiego.2027", "/Users/philliplong/Desktop/Coding/finding_a_roommate/outputs/")
+# sys.argv = ("find_accounts.py", "/Users/philliplong/Desktop/Coding/chromedriver", "", "", "ucsandiego.2027", "/Users/philliplong/Desktop/Coding/finding_a_roommate/outputs/")
 driver_address = sys.argv[1] # driver_address
 username = sys.argv[2].replace("@", "") # username, remove @ symbol if included
 password = sys.argv[3] # password
@@ -68,9 +68,7 @@ if exists(accounts_already_scraped_output):
 
 # FUNCTION FOR CLICKING TO NEXT POST
 def next_post(): # click the next button
-    next_button = driver.driver.find_element("xpath", "//div[@class=' _aaqg _aaqh']")
-    next_button.click() # click on next button
-    del next_button
+    driver.driver.find_element("xpath", "//div[@class=' _aaqg _aaqh']").click()
     
 
 # BEGIN SCRAPING PAGE
@@ -188,4 +186,3 @@ accounts_muir_writable.close()
 accounts_already_scraped_writable = open(accounts_already_scraped_output, "w")
 accounts_already_scraped_writable.write("\n".join(accounts_already_scraped))
 accounts_already_scraped_writable.close()
-

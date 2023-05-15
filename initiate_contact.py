@@ -15,12 +15,11 @@
 # IMPORTS
 from login import instagram_driver # my own class that logs into instagram for me while creating a driver
 import sys # for stdin arguments
-from os.path import exists # for checking if files exist
-from os.path import dirname # for determining the output file
+from os.path import exists, dirname # for checking if files exist and determining the output file
 
 # ARGUMENTS
-# sys.argv = ("bot.py", "/Users/philliplong/Desktop/Coding/chromedriver", "", "", "/Users/philliplong/Desktop/Coding/finding_a_roommate/outputs/accounts_muir.txt")
-sys.argv = ("bot.py", "/Users/philliplong/Desktop/Coding/chromedriver", "jcreek_rec", "phillip5143", "/Users/philliplong/Desktop/Coding/finding_a_roommate/outputs/accounts_muir.txt")
+# sys.argv = ("intiate_contact.py", "/Users/philliplong/Desktop/Coding/chromedriver", "", "", "/Users/philliplong/Desktop/Coding/finding_a_roommate/outputs/accounts_muir.txt")
+sys.argv = ("intiate_contact.py", "/Users/philliplong/Desktop/Coding/chromedriver", "jcreek_rec", "phillip5143", "/Users/philliplong/Desktop/Coding/finding_a_roommate/outputs/accounts_muir.txt")
 driver_address = sys.argv[1] # driver_address
 username = sys.argv[2].replace("@", "") # username, remove @ symbol if included
 password = sys.argv[3] # password
@@ -51,7 +50,10 @@ accounts_to_dm = set((account for account in accounts_muir if account not in acc
 
 
 # DM ACCOUNTS
-message = ""
+message = "Hi fellow Muiron! Congratulations on your acceptance! I created this account to deal with the backlog on @ucsandiego.2027; at the same time, a lot of the people posted to the account are irrelevant to me, since they are not in Muir and I cannot room with them. Would you like to be posted to this account? If yes, please respond by sending 3-5 pictures of yourself + a bio, in that order (personally, I would reuse what I sent / plan to send to @ucsandiego.2027). If no, just don't respond. Though this account is supervised by a real person, many of its functions are automated, so if you could abide by the aforementioned rules, it would make the posting process a lot smoother. Thanks for your time, and again, congrats!"
+if message == "":
+    print("Error: faulty message. Message must be at least one character long.")
+    quit()
 first_account_to_dm = True
 for account in accounts_to_dm:
     try:
@@ -73,21 +75,15 @@ for account in accounts_to_dm:
         driver.driver.find_element("xpath", "//button[@class='_acan _acao _acas _acav _aj1-']/div[text()='Next']").click()
         driver.wait(4, 5)
         
-        # LOCATE TEXT BOX, TYPE IN MESSAGE
+        # SEND MESSAGE, ALSO DETERMINE HOW FAST TO TYPE
         if first_account_to_dm: # if first iteration, type out the message slowly
             scalar = 3.0
             first_account_to_dm = False # update boolean
         else: # not the first iteration
             scalar = 0.0
-
-        driver.simulate_typing(element = driver.driver.find_element("xpath", "//textarea[@placeholder='Message...']"),
-                               text = message, scalar = scalar)
-        driver.wait(1, 2)
+        driver.send_message(text = message, scalar = scalar)
         
-        # SEND MESSAGE
-        driver.driver.find_element("xpath", "//div[@class='x1i10hfl xjqpnuy xa49m3k xqeqjp1 x2hbi6w xdl72j9 x2lah0s xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r x2lwn1j xeuugli x1hl2dhg xggy1nq x1ja2u2z x1t137rt x1q0g3np x1lku1pv x1a2a7pz x6s0dn4 xjyslct x1ejq31n xd10rxx x1sy0etr x17r0tee x9f619 x1ypdohk x1i0vuye xwhw2v2 xl56j7k x17ydfre x1f6kntn x2b8uid xlyipyv x87ps6o x14atkfc x1d5wrs8 x972fbf xcfux6l x1qhh985 xm0m39n xm3z3ea x1x8b98j x131883w x16mih1h xt0psk2 xt7dq6l xexx8yu x4uap5 x18d9i69 xkhd6sd x1n2onr6 xjbqb8w x1n5bzlp x173jzuc x1yc6y37'][@role='button']").click()
-        driver.wait(2, 3)
-        
+        # ADD ACCOUNT TO ACCOUNTS I HAVE INITIATED CONTACT WITH
         accounts_initiated_contact.add(account)
 
 
