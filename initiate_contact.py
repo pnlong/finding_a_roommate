@@ -45,9 +45,19 @@ accounts_initiated_contact_output = dirname(accounts_muir_output) + "/accounts_i
 if exists(accounts_initiated_contact_output):
     for line in open(accounts_initiated_contact_output):
         accounts_initiated_contact.add(str(line).strip())
-        
-accounts_to_dm = set((account for account in accounts_muir if account not in accounts_initiated_contact))
+accounts_initiated_contact_writable = open(accounts_initiated_contact_output, "a")
 
+unread_messages = driver.driver.find_elements("xpath", "//div[@aria-label='Unread']")
+unread_messages = list(element.find_element("xpath", "./../../../../../..") for element in unread_messages)
+unread_accounts = ["", ] * len(unread_messages)
+for i in range(len(unread_messages)):
+    account = unread_messages[i].find_element("xpath", "./div/div/div/div/div/div/span/img[@class='x6umtig x1b1mbwd xaqea5y xav7gou xk390pu x5yr21d xpdipgo xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x11njtxf xh8yej3']").get_attribute("alt")
+    unread_accounts[i] = account[:len(account) - len("'s profile picture")]
+    del account
+del unread_messages
+
+accounts_to_dm = set((account for account in accounts_muir if not (account in accounts_initiated_contact or account in unread_accounts)))
+del accounts_muir, accounts_initiated_contact, unread_accounts
 
 # DM ACCOUNTS
 message = "Hi fellow Muiron! Congratulations on your acceptance! I created this account to deal with the backlog on @ucsandiego.2027; at the same time, a lot of the people posted to the account are irrelevant to me, since they are not in Muir and I cannot room with them. Would you like to be posted to this account? If yes, please respond by sending 3-5 pictures of yourself + a bio, in that order (personally, I would reuse what I sent / plan to send to @ucsandiego.2027). If no, just don't respond. Though this account is supervised by a real person, many of its functions are automated, so if you could abide by the aforementioned rules, it would make the posting process a lot smoother. Thanks for your time, and again, congrats!"
@@ -87,8 +97,8 @@ for account in accounts_to_dm:
             scalar = 0.0
         driver.send_message(text = message, scalar = scalar)
         
-        # ADD ACCOUNT TO ACCOUNTS I HAVE INITIATED CONTACT WITH
-        accounts_initiated_contact.add(account)
+        # WRITE ACCOUNT TO ACCOUNTS I HAVE INITIATED CONTACT WITH FILE
+        accounts_initiated_contact_writable.write(account + "\n")
 
 
     except:
@@ -96,9 +106,6 @@ for account in accounts_to_dm:
         driver.driver.find_element("xpath", "//div[@class='_abm0']/*[@aria-label='Close']").click()
         driver.wait(1.5, 2)
         continue
-        
 
-# WRITE THE ACCOUNTS TO WHICH PROGRAM HAS INITIATED CONTACT TO FILE
-accounts_initiated_contact_writable = open(accounts_initiated_contact_output, "w")
-accounts_initiated_contact_writable.write("\n".join(accounts_initiated_contact))
+
 accounts_initiated_contact_writable.close()

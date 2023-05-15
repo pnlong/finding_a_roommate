@@ -63,7 +63,7 @@ accounts_muir_output = output_directory + "accounts_muir.txt" # note that output
 if exists(accounts_muir_output):
     for line in open(accounts_muir_output, "r"):
         accounts_muir.add(str(line).strip())
-accounts_muir_writable = open(accounts_muir_output, "w")
+accounts_muir_writable = open(accounts_muir_output, "a")
 
 # set of accounts that the program has already looked at (no duplicates)
 accounts_already_scraped = set(())
@@ -71,7 +71,7 @@ accounts_already_scraped_output = output_directory + "accounts_already_scraped.t
 if exists(accounts_already_scraped_output):
     for line in open(accounts_already_scraped_output, "r"):
         accounts_already_scraped.add(str(line).strip())
-accounts_already_scraped_writable = open(accounts_already_scraped_output, "w")
+accounts_already_scraped_writable = open(accounts_already_scraped_output, "a")
 
 
 # FUNCTION FOR CLICKING TO NEXT POST
@@ -83,31 +83,36 @@ def next_post(): # click the next button
 while True:
     
     # WAIT TIME REGARDLESS OF WHETHER PROGRAM HAS SEEN POST BEFORE
-    driver.wait(1.75, 2)
+    driver.wait(0.5, 1.5)
 
     # READ CAPTION
     caption = driver.driver.find_element("xpath", "//h1[@class='_aacl _aaco _aacu _aacx _aad7 _aade']")
     caption = caption.text.lower() # put into lower case to make comparisons easier, also puts account into lower case
     caption = sub(pattern = r"@[^A-Za-z0-9_.]", repl = "", string = caption) # deal with randomly-used @ symbols that aren't social media usernames
+    caption = sub(pattern = r"[:-=/]", repl = "", string = caption) # remove separator charactors
+    
     
     # DETERMINE ACCOUNT NAME
-    if caption.count("@") == 0: # if there is no @, I can't DM them for a bio, so no point in including them on the account
+    if any(instagram in caption.split() for instagram in ("insta", "ig", "instagram")):
+        account = caption.split()
+        i = tuple(i for i in range(len(account)) if any(instagram == account[i] for instagram in ("insta", "ig", "instagram", "instasnap", "instagramsnap", "igsnap", "snapinsta", "snapinstagram", "snapig", "instasnapchat", "instagramsnapchat", "igsnapchat", "snapchatinsta", "snapchatinstagram", "snapchatig")))[-1] # choose the final mention of instagram
+        if any(account[i + 1] == x for x in ("is", "<3", "and", "snap")):
+            if account[i + 1] == "and" and account[i + 2] == "snap":
+                account = account[i + 3][1:] if account[i + 3].startswith("@") else account[i + 3]
+            else:
+                account = account[i + 2][1:] if account[i + 2].startswith("@") else account[i + 2]
+        else:
+            account = account[i + 1][1:] if account[i + 1].startswith("@") else account[i + 1]
+        del i
+        
+    elif caption.count("@") == 0: # if there is no @, I can't DM them for a bio, so no point in including them on the account
         next_post()
         continue
     
     elif caption.count("@") == 1: # one @ symbol
-        account = caption
+        account = caption[caption.index("@") + 1:]
+        account = account.split()[0] # the first word after @
         
-    else: # if multiple @ symbols (perhaps one for snapchat also), pick the account handle that follows "instagram" or some variant of it
-        if "insta" in caption: # if the word insta is in the caption
-            account = caption[caption.index("insta"):]
-        elif "ig" in caption: # if the word ig is in the caption
-            account = caption[caption.index("ig"):]
-        else: # select the last instance of @ and hope for the best, though the postee should have clarified which account is which if there are multiple socials
-            account = caption[caption.rindex("@"):]        
-    
-    account = account[account.index("@") + 1:]
-    account = account.split()[0] # the first word after @
 
     # SKIP ITERATION IF PROGRAM HAS ALREADY SCRAPED ACCOUNTS BEFORE 
     if account in accounts_already_scraped:
@@ -138,17 +143,18 @@ while True:
         # MAKE NOTE OF CURRENT URL
         current_url = str(driver.driver.current_url).split("/")
         current_url = current_url[len(current_url) - 2]
-            
-        # CLICK ON ACCOUNT
-        driver.driver.find_element("xpath", f"//a[@href='/{account}/']").click()
-        driver.wait(2, 3)
         
-        # SCROLL TO TOP OF PAGE IF NOT ALREADY THERE
-        driver.scroll(a = driver.driver.execute_script("return window.pageYOffset;"), b = 0)
-        driver.wait(0.5, 1)
-        
-        # IF ACCOUNT HAS BEEN DELETED OR SOMETHING
+        # IF ACCOUNT HAS BEEN DELETED OR THE USER DIDN'T LINK THEIR INSTAGRAM PROPERLY
         try:
+            
+            # CLICK ON ACCOUNT
+            driver.driver.find_element("xpath", f"//a[@href='/{account}/']").click()
+            driver.wait(2, 3)
+            
+            # SCROLL TO TOP OF PAGE IF NOT ALREADY THERE
+            driver.scroll(a = driver.driver.execute_script("return window.pageYOffset;"), b = 0)
+            driver.wait(0.5, 1)
+                        
             # CLICK FOLLOW
             driver.driver.find_element("xpath", "//button[@class='_acan _acap _acas _aj1-']").click()
             driver.wait(2, 3)
@@ -157,8 +163,9 @@ while True:
             driver.driver.back()
             
             # ADD ACCOUNT TO ACCOUNTS_MUIR
-            accounts_muir.add(account)
-            accounts_muir_writable.write(account + "\n")
+            if account not in accounts_muir:
+                accounts_muir.add(account)
+                accounts_muir_writable.write(account + "\n")
             
         except:
             # GO BACK
@@ -184,7 +191,7 @@ while True:
                 driver.wait(1, 1.25)
                 back_to_post = True
             except: # back_to_post remains False
-                driver.scroll(a = a, b = a + scroll_per_iter, scalar = 0.67)
+                driver.scroll(a = a, b = a + scroll_per_iter, scalar = 1.0)
                 a += scroll_per_iter # update a
                 driver.wait(0.75, 1)
         
@@ -197,7 +204,6 @@ while True:
     except: # if there is no next post
         break # exit loop
 
-del date_of_post_is_valid
 
 accounts_muir_writable.close()
 accounts_already_scraped_writable.close()
