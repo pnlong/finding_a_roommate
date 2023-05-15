@@ -120,30 +120,36 @@ while True:
     
     
     # ADD SOME EXTRA WAIT TIME TO SIMULATE READING CAPTION
-    driver.wait(3.5, 6)
+    driver.wait(3.5, 5)
     
     
     # IF ACCOUNT MENTIONS MUIR, FOLLOW THEM
     if "muir" in caption:
-        accounts_muir.add(account)
+        try:
+            # MAKE NOTE OF CURRENT URL
+            current_url = str(driver.driver.current_url).split("/")
+            current_url = current_url[len(current_url) - 2]
+            
+            # CLICK ON ACCOUNT
+            driver.driver.find_element("xpath", f"//a[@href='/{account}/']").click()
+            driver.wait(2, 3)
         
-        # MAKE NOTE OF CURRENT URL
-        current_url = str(driver.driver.current_url).split("/")
-        current_url = current_url[len(current_url) - 2]
+            # SCROLL TO TOP OF PAGE IF NOT ALREADY THERE
+            driver.scroll(a = driver.driver.execute_script("return window.pageYOffset;"), b = 0)
+            driver.wait(0.5, 1)
         
-        # CLICK ON ACCOUNT
-        driver.driver.find_element("xpath", f"//a[@href='/{account}/']").click()
-        driver.wait(2, 3)
-        driver.scroll(a = driver.driver.execute_script("return window.pageYOffset;"), b = 0) # scroll to top of page if not there already
-        driver.wait(0.5, 1)
+            # CLICK FOLLOW
+            driver.driver.find_element("xpath", "//button[@class='_acan _acap _acas _aj1-']").click()
+            driver.wait(2, 3)
+        except:
+            pass
         
-        # CLICK FOLLOW
-        driver.driver.find_element("xpath", "//button[@class='_acan _acap _acas _aj1-']").click()
-        driver.wait(2, 3)
-    
         # GO BACK
         driver.driver.back()
         
+        # ADD ACCOUNT TO ACCOUNTS_MUIR
+        accounts_muir.add(account)
+
         # RELOCATE POST WE WERE JUST LOOKING AT
         driver.wait(0.75, 1.25)
         a = 0 # where to start scrolling from
