@@ -45,7 +45,8 @@ driver.driver.find_element("xpath", f"//a[@href='/{username_to_scrape}/']").clic
 driver.wait(3, 4)
 
 # SCROLL DOWN TO FIRST POST
-driver.scroll(a = 0, b = 400)
+y_scroll_most_recent = 400
+driver.scroll(a = 0, b = y_scroll_most_recent)
 driver.wait(1.5, 3)
 
 # CLICK ON FIRST POST
@@ -80,7 +81,8 @@ def next_post(): # click the next button
     
 
 # BEGIN SCRAPING PAGE
-while True:
+date_of_post_is_valid = True
+while date_of_post_is_valid:
     
     # WAIT TIME REGARDLESS OF WHETHER PROGRAM HAS SEEN POST BEFORE
     driver.wait(0.5, 1.5)
@@ -104,15 +106,17 @@ while True:
         else:
             account = account[i + 1][1:] if account[i + 1].startswith("@") else account[i + 1]
         del i
-        
-    elif caption.count("@") == 0: # if there is no @, I can't DM them for a bio, so no point in including them on the account
-        next_post()
-        continue
     
     elif caption.count("@") == 1: # one @ symbol
         account = caption[caption.index("@") + 1:]
         account = account.split()[0] # the first word after @
         
+    elif caption.count("@") >= 2:
+        account = caption[len(caption) - caption[::-1].index("@"):]
+        account = account.split()[0] # get last @
+    else: # if there is no @, I can't DM them for a bio, so no point in including them on the account
+        next_post()
+        continue
 
     # SKIP ITERATION IF PROGRAM HAS ALREADY SCRAPED ACCOUNTS BEFORE 
     if account in accounts_already_scraped:
@@ -129,6 +133,7 @@ while True:
     date_of_post = datetime.strptime(date_of_post, "%Y-%m-%d")
     if date_of_post < datetime.strptime("2023-01-01", "%Y-%m-%d"): # if post before January 1, 2023, break the while loop
         del date_of_post
+        date_of_post_is_valid = False
         break # if there is no more posts, exit the while loop
     del date_of_post
     
@@ -176,25 +181,39 @@ while True:
             driver.driver.find_element("xpath", f"//a[@href='/{username_to_scrape}/'][@class='x1i10hfl xjqpnuy xa49m3k xqeqjp1 x2hbi6w xdl72j9 x2lah0s xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r x2lwn1j xeuugli x1hl2dhg xggy1nq x1ja2u2z x1t137rt x1q0g3np x1lku1pv x1a2a7pz x6s0dn4 xjyslct x1ejq31n xd10rxx x1sy0etr x17r0tee x9f619 x1ypdohk x1i0vuye xwhw2v2 xl56j7k x17ydfre x1f6kntn x2b8uid xlyipyv x87ps6o x14atkfc x1d5wrs8 x972fbf xcfux6l x1qhh985 xm0m39n xm3z3ea x1x8b98j x131883w x16mih1h xt7dq6l xexx8yu x4uap5 x18d9i69 xkhd6sd x1n2onr6 xjbqb8w x1n5bzlp xqnirrm xj34u2y x568u83 x3nfvp2']").click()
             driver.wait(1, 1.3)
 
+
         # RELOCATE POST WE WERE JUST LOOKING AT
         driver.wait(0.75, 1.25)
-        a = 0 # where to start scrolling from
+        
+        # get us most of the way there (to the y_scroll_most_recent) at a faster speed
+        while driver.driver.execute_script("return window.pageYOffset;") < y_scroll_most_recent:
+            try:
+                driver.scroll(a = driver.driver.execute_script("return window.pageYOffset;"), b = y_scroll_most_recent, scalar = 0.14) # scroll to previous post
+            except:
+                pass
+            driver.wait(0.5, 1.25)
+        
+        # get us the rest of the way there, more slowly
+        a = driver.driver.execute_script("return window.pageYOffset;") # where to start scrolling from
         scroll_per_iter = 300 # amount to scroll each time
         back_to_post = False # whether the program can locate the post element
         while not back_to_post:
             try:
                 relocated_post = driver.driver.find_element("xpath", f"//a[@href='/p/{current_url}/']") # if this succeeds, we are near the post (its loaded in)
                 driver.scroll(a = a, b = relocated_post.location["y"]) # scroll to previous post
+                y_scroll_most_recent = relocated_post.location["y"] # update y_scroll_most_recent
                 driver.wait(0.5, 1.25)
                 relocated_post.click() # click on post
                 del relocated_post
                 driver.wait(1, 1.25)
                 back_to_post = True
             except: # back_to_post remains False
-                driver.scroll(a = a, b = a + scroll_per_iter, scalar = 1.0)
+                driver.scroll(a = a, b = a + scroll_per_iter)
                 a += scroll_per_iter # update a
                 driver.wait(0.75, 1)
+        del a, scroll_per_iter, back_to_post
         
+    
     del caption
     
 
@@ -204,6 +223,7 @@ while True:
     except: # if there is no next post
         break # exit loop
 
+del date_of_post_is_valid, y_scroll_most_recent
 
 accounts_muir_writable.close()
 accounts_already_scraped_writable.close()
