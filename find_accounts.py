@@ -179,7 +179,7 @@ while True:
         # RELOCATE POST WE WERE JUST LOOKING AT
         driver.wait(0.75, 1.25)
         a = 0 # where to start scrolling from
-        scroll_per_iter = 2400 # amount to scroll each time
+        scroll_per_iter = 300 # amount to scroll each time
         back_to_post = False # whether the program can locate the post element
         while not back_to_post:
             try:

@@ -1,6 +1,6 @@
 # finding\_a\_roommate
 
-Creates an Instagram bot in charge of posting pictures and informational snippets received via DM. Meant for use as a college acceptance page.
+Instagram bot that operates an account where incoming college freshmen introduce themselves to their future peers. Posts pictures and informational snippets received via direct message.
 
 ## Background
 
