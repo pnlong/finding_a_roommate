@@ -89,7 +89,7 @@ class instagram_driver:
     
     # click on the search button on side tab
     def click_search(self):
-        self.driver.find_element("xpath", "//a[@href='#']").click()
+        self.driver.find_element("xpath", "//a[@href='#']/div/div/div/div/*[name()='svg'][@aria-label='Search']").click()
         self.wait(2, 3)
     
     # click on the messages button on side tab

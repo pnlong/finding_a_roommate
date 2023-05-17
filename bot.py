@@ -362,3 +362,5 @@ rmdir(temporary_output)
 # CLOSE OUTPUTS
 accounts_success_writable.close()
 accounts_concern_writable.close()
+
+driver.driver.quit()

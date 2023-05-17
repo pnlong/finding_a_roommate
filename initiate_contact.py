@@ -108,4 +108,6 @@ for account in accounts_to_dm:
         continue
 
 
+# CLOSE OUTPUTS
 accounts_initiated_contact_writable.close()
+driver.driver.quit()
