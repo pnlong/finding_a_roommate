@@ -141,7 +141,6 @@ while True:
         accounts_already_scraped_writable.write(stop_key + "\n")
         del date_of_post
         break # if there is no more posts, exit the while loop
-    del date_of_post
     
     # SKIP ITERATION IF PROGRAM HAS ALREADY SCRAPED ACCOUNTS BEFORE 
     if account in accounts_already_scraped:
