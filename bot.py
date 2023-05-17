@@ -77,7 +77,6 @@ if not exists(temporary_output):
     makedirs(temporary_output)
 
 
-
 # HELPER FUNCTIONS
 
 # clear a directory of all files
@@ -85,6 +84,7 @@ def clear_dir(directory):
     directory = correct_filepath(directory) # deal with / at end of directory
     for file in listdir(directory):
         remove(directory + "/" + file)
+clear_dir(temporary_output) # clear in case there is anything
     
 # analyze chats
 def get_chats():
@@ -324,13 +324,13 @@ try:
     driver.driver.find_element("xpath", "//span[contains(text(),'Request')]").click()
 
     # GET A LIST OF REQUESTS
-    requests = driver.driver.find_elements("xpath", "//a[contains(@href,'/direct/t/')]")
+    requests = driver.driver.find_elements("xpath", "//div/div/div/div/div/div/span/img[@class='x6umtig x1b1mbwd xaqea5y xav7gou xk390pu x5yr21d xpdipgo xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x11njtxf xh8yej3']")
 
     # ADDRESS EACH REQUEST
     for i, request in enumerate(requests):
         
         # GET ACCOUNT NAME
-        account = request.find_element("xpath", "//div/div/div/div/div/div/span/img[@class='x6umtig x1b1mbwd xaqea5y xav7gou xk390pu x5yr21d xpdipgo xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x11njtxf xh8yej3']").get_attribute("alt")
+        account = request.get_attribute("alt")
         account = account[:len(account) - len("'s profile picture")]
         
         # CLICK ON REQUEST
@@ -347,6 +347,7 @@ try:
         
         # CLICK ON REQUESTS BUTTON IF IT IS THERE
         if i <= len(requests) - 2:
+            driver.scroll(a = 800, b = 0, element = driver.driver.find_element("xpath", "//div[@class='_abyk']")) # scroll up in the messages pane to see requests
             driver.driver.find_element("xpath", "//span[contains(text(),'Request')]").click()
 
         # REMOVE LOCAL TEMPORARY FILES

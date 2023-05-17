@@ -19,7 +19,6 @@ from os.path import exists, dirname # for checking if files exist and determinin
 
 # ARGUMENTS
 # sys.argv = ("intiate_contact.py", "/Users/philliplong/Desktop/Coding/chromedriver", "", "", "/Users/philliplong/Desktop/Coding/finding_a_roommate/outputs/accounts_muir.txt")
-sys.argv = ("intiate_contact.py", "/Users/philliplong/Desktop/Coding/chromedriver", "jcreek_rec", "phillip5143", "/Users/philliplong/Desktop/Coding/finding_a_roommate/outputs/accounts_muir.txt")
 driver_address = sys.argv[1] # driver_address
 username = sys.argv[2].replace("@", "") # username, remove @ symbol if included
 password = sys.argv[3] # password
@@ -60,14 +59,14 @@ accounts_to_dm = set((account for account in accounts_muir if not (account in ac
 del accounts_muir, accounts_initiated_contact, unread_accounts
 
 # DM ACCOUNTS
-message = "Hi fellow Muiron! Congratulations on your acceptance! I created this account to deal with the backlog on @ucsandiego.2027; at the same time, a lot of the people posted to the account are irrelevant to me, since they are not in Muir and I cannot room with them. Would you like to be posted to this account? If yes, please respond by sending 3-5 pictures of yourself + a bio, in that order (personally, I would reuse what I sent / plan to send to @ucsandiego.2027). If no, just don't respond. Though this account is supervised by a real person, many of its functions are automated, so if you could abide by the aforementioned rules, it would make the posting process a lot smoother. Thanks for your time, and again, congrats!"
+message = "Hi fellow Muiron! Congratulations on your acceptance! I created this account to deal with the backlog on @ucsandiego.2027; at the same time, a lot of the people posted to the account were irrelevant to me, since they were not in Muir and I cannot room with them. Would you like to be posted to this account? If yes, please respond by sending 3-5 pictures of yourself + a bio, in that order (personally, I would reuse what I sent / plan to send to @ucsandiego.2027). If no, just don't respond. Though this account is supervised by a real person, many of its functions are automated, so if you could abide by the aforementioned rules, it would make the posting process a lot smoother. Thanks for your time, and again, congrats!"
 if message == "":
     print("Error: faulty message. Message must be at least one character long.")
     quit()
 first_account_to_dm = True
 for account in accounts_to_dm:
+    
     try:
-        
         # CLICK ON NEW MESSAGE ICON
         driver.driver.find_element("xpath", "//button[@class='_abl- _abm2']").click()
         driver.wait(2, 4.5)
@@ -83,7 +82,7 @@ for account in accounts_to_dm:
         
         # CLICK ON NEXT BUTTON
         driver.driver.find_element("xpath", "//button[@class='_acan _acao _acas _acav _aj1-']/div[text()='Next']").click()
-        driver.wait(4, 5)
+        driver.wait(2, 3)
         
         # CHECK IF THEY HAVE INITIATED CONTACT WITH ME ALREADY
         if len(driver.driver.find_elements("xpath", "//div[@class='x9f619 xjbqb8w x78zum5 x168nmei x13lgxp2 x5pf9jr xo71vjh x1n2onr6 x1plvlek xryxfnj x1c4vz4f x2lah0s x1q0g3np xqjyukv xuk3077 x1oa3qoh x1nhvcw1']/div[@class='_ac72']/div/div/div[@class='_acqt _acqu']/div/div/div/div/*")) != 0:
@@ -96,16 +95,15 @@ for account in accounts_to_dm:
         else: # not the first iteration
             scalar = 0.0
         driver.send_message(text = message, scalar = scalar)
+        driver.wait(0.5, 1.5)
         
         # WRITE ACCOUNT TO ACCOUNTS I HAVE INITIATED CONTACT WITH FILE
         accounts_initiated_contact_writable.write(account + "\n")
 
-
     except:
         driver.wait(1.5, 2) # if for some reason the account doesn't exist anymore or something, wait, and move on
-        driver.driver.find_element("xpath", "//div[@class='_abm0']/*[@aria-label='Close']").click()
-        driver.wait(1.5, 2)
-        continue
+        driver.driver.find_element("xpath", "//div[@class='_abm0']/*[name()='svg'][@aria-label='Close']").click()
+        driver.wait(0.5, 1.5)
 
 
 # CLOSE OUTPUTS
