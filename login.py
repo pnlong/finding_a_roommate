@@ -66,11 +66,14 @@ class instagram_driver:
             pass
         
         # deal with "Turn on Notifications" popup if present, choose "Not Now" button
-        try:
-            self.driver.find_element("xpath", "//button[text()='Not Now']").click()
-            self.wait(3, 4)
-        except:
-            pass
+        notifications_popup_has_appeared = False
+        while not notifications_popup_has_appeared:
+            try:
+                self.driver.find_element("xpath", "//button[text()='Not Now']").click()
+                notifications_popup_has_appeared = True
+            except:
+                self.wait(1, 1)
+        del notifications_popup_has_appeared
         
         # do a quick scrolling jittery action to fool ReCAPTCHA
         yi, yd, yf = 0, 0, 0 # initial y, change in y, final y

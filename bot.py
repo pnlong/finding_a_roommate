@@ -50,17 +50,22 @@ driver.click_messages()
 
 
 # READ IN FILES, CREATE SETS
+# succesful posts
 accounts_success = set(()) # set of accounts that I have successfully posted (no duplicates)
 accounts_success_output = output_directory + "successful_posts.txt"
 if exists(accounts_success_output):
     for line in open(accounts_success_output):
         accounts_success.add(str(line).strip())
+accounts_success_writable = open(accounts_success_output, "a")
 
+# failed posts
 accounts_concern = set(()) # set of accounts that I have failed to post (error in the posting process) or I need to look at personally for other reasons (no duplicates)
 accounts_concern_output = output_directory + "concerns.txt"
 if exists(accounts_concern_output):
     for line in open(accounts_concern_output):
         accounts_concern.add(str(line).strip())
+accounts_concern_writable = open(accounts_concern_output, "a")
+
 
 # CREATE OUTPUT DIRECTORY IF IT DOES NOT YET EXIST
 if not exists(output_directory): # if output directory doesn't exist yet
@@ -113,12 +118,14 @@ def decide_post(chats, media_directory = temporary_output): # media_directory is
        
     # determine media to post
     media = list(chat for chat in chats if chat[0] in ("image", "video"))
-    acceptance_letter_present = False
+    acceptance_letter_indicies = [False, ] * len(media)
     for i in range(len(media)):
         if media[i][0] == "image":
             if image_is_acceptance_letter(image_url = media[i][1]): # if first image is an acceptance letter remove it
-                acceptance_letter_present = True
-                del media[i] # don't want to post an acceptance letter
+                acceptance_letter_indicies[i] = True
+    media = list(media[i] for i in range(len(media)) if not acceptance_letter_indicies[i]) # remove any acceptance letter image
+    acceptance_letter_present = any(acceptance_letter_indicies)
+    del acceptance_letter_indicies
     
     # check for and remove duplicates in media
     media = list(dict.fromkeys(media[::-1]))[::-1] # remove duplicates (keep media most recently sent)
@@ -143,14 +150,38 @@ def post(caption, media_filepaths):
     driver.wait(1, 2)
     
     # upload to instagram
-    upload = driver.driver.find_element("xpath", "//input[@type='file'][@accept='image/jpeg,image/png,image/heic,image/heif,video/mp4,video/quicktime']").send_keys("\n".join(media_filepaths))
-    driver.wait(5, 7)
+    driver.driver.find_element("xpath", "//input[@type='file'][@accept='image/jpeg,image/png,image/heic,image/heif,video/mp4,video/quicktime']").send_keys("\n".join(media_filepaths))
+    driver.wait(6, 8)
+    
+    # wait for pictures to upload
+    done_uploading = False
+    seconds_elapsed = 0
+    max_seconds_elapsed = 12
+    while not done_uploading and seconds_elapsed <= max_seconds_elapsed:
+        try:
+            driver.driver.find_element("xpath", "//div[text()='Crop']")
+            done_uploading = True
+        except:
+            seconds_elapsed += 1
+            driver.wait(1, 1)
+    if seconds_elapsed > max_seconds_elapsed:
+        return False
+    del done_uploading, seconds_elapsed
+    
+    # if there is the "Videos are now reels" popup
+    try:
+        driver.driver.find_element("xpath", "//button[text()='OK']").click()
+        driver.wait(1, 1.5)
+    except:
+        pass
     
     # click Next to go to Filters section
     driver.driver.find_element("xpath", "//div[text()='Next']").click()
+    driver.wait(1, 1.5)
     
     # click Next again to go to create new post section
     driver.driver.find_element("xpath", "//div[text()='Next']").click()
+    driver.wait(1, 1.5)
     
     # type in caption
     driver.simulate_typing(element = driver.driver.find_element("xpath", "//div[@aria-label='Write a caption...']/p"),
@@ -159,11 +190,25 @@ def post(caption, media_filepaths):
     
     # click Share
     driver.driver.find_element("xpath", "//div[text()='Share']").click()
-    driver.wait(6, 8)
+    done_posting = False
+    seconds_elapsed = 0
+    while not done_posting and seconds_elapsed <= max_seconds_elapsed:
+        try:
+            driver.driver.find_element("xpath", "//img[@alt='Animated checkmark']")
+            done_posting = True
+        except:
+            seconds_elapsed += 1
+            driver.wait(1, 1)
+    if seconds_elapsed > max_seconds_elapsed:
+        return False
+    del done_posting, seconds_elapsed
+    driver.wait(1, 2)
     
     # close posting window
     driver.driver.find_element("xpath", "//div/div/*[@aria-label='Close']").click()
     driver.wait(3, 4)
+    
+    return True
         
 # check if the first image in a given an image url is a screenshot of an acceptance letter
 def image_is_acceptance_letter(image_url):
@@ -172,18 +217,19 @@ def image_is_acceptance_letter(image_url):
     image_text = pytesseract.image_to_string(Image.open(image_filepath)) # OCR
     remove(image_filepath) # remove image file
     del image_filepath
-    return "in Muir College." in image_text
+    return "muir" in image_text.lower()
 
 # try to post, given that the bot is already in the chat with the other person
 def try_to_post(account, checking_for_acceptance_letter):
     
     # get chats
-    driver.scroll(a = 500, b = 0, element = driver.driver.find_element("xpath", "//div[@class='_ab5z _ab5_']")) # scroll up to load in DMs
+    driver.scroll(a = 600, b = 0, element = driver.driver.find_element("xpath", "//div[@class='_ab5z _ab5_']")) # scroll up to load in DMs
     chats = get_chats()
     
     # determine caption
     caption = list(chat[1] for chat in chats if chat[0] == "text")
     if "ERROR" in list(map(lambda x: x.upper(), caption)): # if any chat is ERROR, add to accounts concern and have me manually review it
+        accounts_concern_writable.write(account + "\n")
         accounts_concern.add(account)
         return None
     caption.sort(key = len) # sort caption by string length; the longest string is almost always the desired caption
@@ -199,7 +245,7 @@ def try_to_post(account, checking_for_acceptance_letter):
         return None
     
     if acceptance_letter_present and len(media_filepaths) == 0: # if there is no media other than screenshot of acceptance letter
-        driver.send_message(text = "Hi fellow Muiron! Thanks for sending in your acceptance letter. Congratulations! Would you like to be posted to this account? If yes, please respond by sending 3-5 pictures of yourself + a bio, in that order (personally, I would reuse what I sent / plan to send to @ucsandiego.2027). If no, just don't respond. Though this account is supervised by a real person, many of its functions are automated, so if you could abide by the aforementioned rules, it would make the posting process a lot smoother. Thanks for your time, and again, congrats!")
+        driver.send_message(text = "Hi fellow Muiron! Thanks for sending in your acceptance letter. Congratulations! Please send 3-5 pictures of yourself + a bio, in that order (personally, I would reuse what I sent / plan to send to @ucsandiego.2027). Though this account is supervised by a real person, many of its functions are automated, so if you could abide by the aforementioned rules, it would make the posting process a lot smoother. Thanks for your time, and again, congrats!")
         return None
     
     if not acceptance_letter_present and len(media_filepaths) == 0: # not checking_for_acceptance_letter is implied from first if statement
@@ -209,13 +255,19 @@ def try_to_post(account, checking_for_acceptance_letter):
     # no need to return to messages at this point because we never left messages pane to begin with
 
     # post
-    post(caption = caption, media_filepaths = media_filepaths)
+    posted = post(caption = caption, media_filepaths = media_filepaths)
     del caption, media_filepaths
     
+    if not posted: # if post was not successful
+        failure_protocol(account)
+        
     # send dm confirming post
     driver.click_messages() # return to Messages pane
     driver.driver.find_element("xpath", f"//img[@alt=\"{account}'s profile picture\"]").click() # return to Chat with person
     driver.send_message(text = "Your information has been posted! Please notify me if there are any issues with your post.")
+    
+    # write to file
+    accounts_success_writable.write(account + "\n")
     accounts_success.add(account)
 
 # protocol for if info fails to be posted for some reason
@@ -228,11 +280,13 @@ def failure_protocol(account):
     driver.wait(1, 2)
         
     # send error message
-    driver.send_message(text = "Unfortunately, there was an error in the posting process. I have notified the account account administrator, who will deal with the issue personally as soon as possible.")
+    driver.send_message(text = "Unfortunately, there was an error in the posting process. I have notified the account administrator, who will deal with the issue personally as soon as possible.")
+    accounts_concern_writable.write(account + "\n")
     accounts_concern.add(account)
 
 
 # GET A LIST OF UNREAD MESSAGES
+driver.scroll(a = 0, b = 800, element = driver.driver.find_element("xpath", "//div[@class='_abyk']")) # scroll down in the messages pane
 unread_messages = driver.driver.find_elements("xpath", "//div[@aria-label='Unread']")
 unread_messages = list(element.find_element("xpath", "./../../../../../..") for element in unread_messages)
 
@@ -253,7 +307,8 @@ for unread_message in unread_messages:
     # CLICK ON MESSAGE
     unread_message.click()
     driver.wait(1, 2)
-        
+    
+    # TRY TO POST
     try:
         try_to_post(account = account, checking_for_acceptance_letter = False) # no need to vet these users, because @ucsandiego.2027 has already done so
     except: # if it didn't work for some reason
@@ -304,12 +359,6 @@ except:
 # OUTPUT VARIOUS FILES
 rmdir(temporary_output)
 
-# SUCCESSFUL POSTS
-accounts_success_writable = open(accounts_success_output, "w")
-accounts_success_writable.write("\n".join(accounts_success))
+# CLOSE OUTPUTS
 accounts_success_writable.close()
-
-# FAILED POSTS
-accounts_concern_writable = open(accounts_concern_output, "w")
-accounts_concern_writable.write("\n".join(accounts_concern))
 accounts_concern_writable.close()
