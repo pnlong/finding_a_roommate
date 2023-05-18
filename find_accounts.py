@@ -67,9 +67,11 @@ if exists(accounts_followed_output):
         accounts_followed.add(str(line).strip())
 accounts_followed_writable = open(accounts_followed_output, "a")
 
+stop_key_present = False # to avoid double writing stop_key
 if stop_key in accounts_muir or stop_key in accounts_already_scraped:
     print("All relevant accounts parsed.")
-    stop_date = "2023-05-10" # reset stop_date to a more sooner, quicker to scrape date
+    stop_key_present = True
+    stop_date = "2023-05-18" # reset stop_date to a more sooner, quicker-to-scrape date
 
 # FUNCTION FOR CLICKING TO NEXT POST
 def next_post(): # click the next button
@@ -105,9 +107,10 @@ while True:
     # READ CAPTION
     caption = driver.driver.find_element("xpath", "//h1[@class='_aacl _aaco _aacu _aacx _aad7 _aade']")
     caption = caption.text.lower() # put into lower case to make comparisons easier, also puts account into lower case
-    caption = sub(pattern = r"@[^A-Za-z0-9_.]", repl = "", string = caption) # deal with randomly-used @ symbols that aren't social media usernames
-    caption = sub(pattern = r"[:-=/()+]", repl = "", string = caption) # remove separator charactors
-    
+    caption = sub(pattern = r"[^A-Za-z0-9_.@]", repl = " ", string = caption) # remove all characters other than those that can be used in account names
+    caption = sub(pattern = r"@[^A-Za-z0-9_.]", repl = " ", string = caption) # deal with randomly-used @ symbols that aren't social media usernames
+    caption = caption[:len(caption) - 1] if caption.endswith("@") else caption
+        
     # DETERMINE ACCOUNT NAME
     if any(instagram in caption.split() for instagram in ("insta", "ig", "instagram")):
         account = caption.split()
@@ -137,8 +140,9 @@ while True:
     date_of_post = date_of_post[0:date_of_post.index("T")] # subset date of post to just include the date
     date_of_post = datetime.strptime(date_of_post, "%Y-%m-%d")
     if date_of_post < datetime.strptime(stop_date, "%Y-%m-%d"): # if post before January 1, 2023, break the while loop
-        accounts_muir_writable.write(stop_key + "\n") # write
-        accounts_already_scraped_writable.write(stop_key + "\n")
+        if not stop_key_present:
+            accounts_muir_writable.write(stop_key + "\n") # write
+            accounts_already_scraped_writable.write(stop_key + "\n")
         del date_of_post
         break # if there is no more posts, exit the while loop
     
