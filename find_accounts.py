@@ -85,8 +85,12 @@ driver.simulate_typing(element = driver.driver.find_element("xpath", "//input[@a
 driver.wait(1, 2)
 
 # GO TO DESIRED INSTAGRAM ACCOUNT
-driver.driver.find_element("xpath", f"//a[@href='/{username_to_scrape}/']").click() # click on account with the correct username
-driver.wait(3, 4)
+try: # if it exists
+    driver.driver.find_element("xpath", f"//a[@href='/{username_to_scrape}/']").click() # click on account with the correct username
+    driver.wait(3, 4)
+except: # if it does not exist
+    print("Error: Invalid username_to_scrape argument. Account does not exist / cannot be found.")
+    quit()
 
 # SCROLL DOWN TO FIRST POST
 y_scroll_most_recent = 400
