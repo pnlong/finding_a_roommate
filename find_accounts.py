@@ -210,7 +210,7 @@ for account in (account for account in accounts_muir if account not in accounts_
     try:
         driver.driver.find_element("xpath", "//button[@class='_acan _acap _acas _aj1-']").click()
         driver.wait(2, 3)
-    except: # if I already requested/followed them, but they aren't in accounts_followed, keep going
+    except: # if I already requested/followed them, but they aren't in accounts_followed (because we wouldn't be looping over this account if they were), keep going
         driver.wait(0.5, 1.5)
         
     # write to file
