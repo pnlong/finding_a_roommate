@@ -106,7 +106,7 @@ while True:
     caption = driver.driver.find_element("xpath", "//h1[@class='_aacl _aaco _aacu _aacx _aad7 _aade']")
     caption = caption.text.lower() # put into lower case to make comparisons easier, also puts account into lower case
     caption = sub(pattern = r"@[^A-Za-z0-9_.]", repl = "", string = caption) # deal with randomly-used @ symbols that aren't social media usernames
-    caption = sub(pattern = r"[:-=/()]", repl = "", string = caption) # remove separator charactors
+    caption = sub(pattern = r"[:-=/()+]", repl = "", string = caption) # remove separator charactors
     
     # DETERMINE ACCOUNT NAME
     if any(instagram in caption.split() for instagram in ("insta", "ig", "instagram")):
