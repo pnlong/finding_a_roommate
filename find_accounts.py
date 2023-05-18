@@ -114,7 +114,13 @@ while True:
     # DETERMINE ACCOUNT NAME
     if any(instagram in caption.split() for instagram in ("insta", "ig", "instagram")):
         account = caption.split()
-        i = tuple(i for i in range(len(account)) if any(instagram == account[i] for instagram in ("insta", "ig", "instagram", "instasnap", "instagramsnap", "igsnap", "snapinsta", "snapinstagram", "snapig", "instasnapchat", "instagramsnapchat", "igsnapchat", "snapchatinsta", "snapchatinstagram", "snapchatig")))[-1] # choose the final mention of instagram
+        i = tuple(i for i in range(len(account)) if any(instagram == account[i] for instagram in ("insta", "ig", "instagram",
+                                                                                                  "instasnap", "instagramsnap", "igsnap",
+                                                                                                  "snapinsta", "snapinstagram", "snapig",
+                                                                                                  "instasnapchat", "instagramsnapchat", "igsnapchat",
+                                                                                                  "snapchatinsta", "snapchatinstagram", "snapchatig",
+                                                                                                  "instasc", "instagramsc", "igsc",
+                                                                                                  "scinsta", "scinstagram", "scig")))[-1] # choose the final mention of instagram
         if any(account[i + 1] == x for x in ("is", "<3", "and", "snap")):
             if account[i + 1] == "and" and account[i + 2] == "snap":
                 account = account[i + 3][1:] if account[i + 3].startswith("@") else account[i + 3]
@@ -147,10 +153,10 @@ while True:
         break # if there is no more posts, exit the while loop
     
     # SKIP ITERATION IF PROGRAM HAS ALREADY SCRAPED ACCOUNTS BEFORE 
-    if account in accounts_already_scraped:
+    if account in accounts_already_scraped or len(account) < 3:
         next_post()
         continue
-    else: # have not yet scraped this account
+    else: # if not in accounts_already_scraped, add to accounts_already_scraped (and the account name is 3 or more characters)
         accounts_already_scraped.add(account)
         accounts_already_scraped_writable.write(account + "\n")
         
