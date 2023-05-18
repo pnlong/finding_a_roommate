@@ -28,7 +28,6 @@ pytesseract.pytesseract.tesseract_cmd = "/usr/local/bin/tesseract" # location of
 
 # ARGUMENTS
 # sys.argv = ("bot.py", "/Users/philliplong/Desktop/Coding/chromedriver", "", "", "/Users/philliplong/Desktop/Coding/finding_a_roommate/outputs")
-sys.argv = ("bot.py", "/Users/philliplong/Desktop/Coding/chromedriver", "jcreek_rec", "phillip5143", "/Users/philliplong/Desktop/Coding/finding_a_roommate/outputs")
 driver_address = sys.argv[1] # driver_address
 username = sys.argv[2] # username
 password = sys.argv[3] # password
