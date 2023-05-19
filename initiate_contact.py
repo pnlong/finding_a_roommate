@@ -24,6 +24,7 @@ username = sys.argv[2].replace("@", "") # username, remove @ symbol if included
 password = sys.argv[3] # password
 accounts_muir_output = sys.argv[4] # accounts_to_dm
 
+stop_key = "*******************" # string to put at the end of files signaling they are complete
 
 # CREATE DRIVER AND LOGIN
 driver = instagram_driver(driver_address = driver_address, username = username, password = password) # create instance of chrome driver
@@ -37,7 +38,8 @@ driver.click_messages()
 accounts_muir = set(()) # set of accounts that mention muir (no duplicates)
 if exists(accounts_muir_output):
     for line in open(accounts_muir_output):
-        accounts_muir.add(str(line).strip())
+        if stop_key not in line:
+            accounts_muir.add(str(line).strip())
 
 accounts_initiated_contact = set(()) # set of accounts that the program might have initiated contact with (no duplicates)
 accounts_initiated_contact_output = dirname(accounts_muir_output) + "/accounts_initiated_contact.txt"

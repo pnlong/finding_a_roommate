@@ -206,7 +206,7 @@ for account in (account for account in accounts_muir if account not in accounts_
     
     # TYPE IN ACCOUNT NAME
     driver.simulate_typing(element = driver.driver.find_element("xpath", "//input[@aria-label='Search input']"), text = account)
-    driver.wait(0.5, 2)
+    driver.wait(3, 4)
 
     # TRY TO GO TO DESIRED INSTAGRAM ACCOUNT
     try:
@@ -231,9 +231,10 @@ for account in (account for account in accounts_muir if account not in accounts_
         
     # click on search again (click search if input area isn't there)
     try:
-        driver.driver.find_element("xpath", "//input[@aria-label='Search input']")
+        driver.driver.find_element("xpath", "//input[@aria-label='Search input']").clear()
     except:
         driver.click_search()
+        driver.driver.find_element("xpath", "//input[@aria-label='Search input']").clear()
 
 print("Followed all accounts in accounts.muir.")
 
