@@ -32,8 +32,7 @@ output_directory = sys.argv[5] if sys.argv[5].endswith("/") else sys.argv[5] + "
 
 stop_key = "*******************" # string to put at the end of files signaling they are complete
 stop_date = datetime.strptime("2023-01-01", "%Y-%m-%d") # date to stop scraping account
-new_stop_date = datetime.now() - timedelta(days = 7) # sooner date to stop scraping account sooner (a week ago)
-
+d = 7 # number of days ago to set new stop date
 
 # CREATE DRIVER AND LOGIN
 driver = instagram_driver(driver_address = driver_address, username = username, password = password) # create instance of chrome driver
@@ -71,10 +70,9 @@ accounts_followed_writable = open(accounts_followed_output, "a")
 
 # ADJUST STOP DATE
 stop_key_present = False # to avoid double writing stop_key
-if stop_key in accounts_muir or stop_key in accounts_already_scraped:
+if stop_key in accounts_muir or stop_key in accounts_already_scraped: # reset stop_date to a more sooner, quicker-to-scrape date
     stop_key_present = True
-    stop_date = new_stop_date # reset stop_date to a more sooner, quicker-to-scrape date
-del new_stop_date
+    stop_date = datetime.now() - timedelta(days = d) # sooner date to stop scraping account sooner (a week ago)
 
 # FUNCTION FOR CLICKING TO NEXT POST
 def next_post(): # click the next button
