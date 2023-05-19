@@ -49,7 +49,8 @@ accounts_muir = set(())
 accounts_muir_output = output_directory + "accounts_muir.txt" # note that output directory already has "/" on the end
 if exists(accounts_muir_output):
     for line in open(accounts_muir_output, "r"):
-        accounts_muir.add(str(line).strip())
+        if stop_key not in line:
+            accounts_muir.add(str(line).strip())
 accounts_muir_writable = open(accounts_muir_output, "a")
 
 # set of accounts that the program has already looked at (no duplicates)
@@ -57,7 +58,8 @@ accounts_already_scraped = set(())
 accounts_already_scraped_output = output_directory + "accounts_already_scraped.txt" # note that output directory already has "/" on the end
 if exists(accounts_already_scraped_output):
     for line in open(accounts_already_scraped_output, "r"):
-        accounts_already_scraped.add(str(line).strip())
+        if stop_key not in line:
+            accounts_already_scraped.add(str(line).strip())
 accounts_already_scraped_writable = open(accounts_already_scraped_output, "a")
 
 # set of accounts that the program has already followed (no duplicates)
@@ -226,12 +228,12 @@ for account in (account for account in accounts_muir if account not in accounts_
         driver.wait(0.5, 1.5)
         
     # write to file
-    accounts_followed.add(account)
+    accounts_followed.add(account) # they are not in accounts followed
     accounts_followed_writable.write(account + "\n")
         
     # click on search again (click search if input area isn't there)
     try:
-        driver.driver.find_element("xpath", "//input[@aria-label='Search input']").clear()
+        driver.driver.find_element("xpath", "//div[@aria-label='Clear the search box']").click()
     except:
         driver.click_search()
 
