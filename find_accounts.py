@@ -17,6 +17,7 @@
 from login import instagram_driver # my own class that logs into instagram for me while creating a driver
 import sys # for stdin arguments
 from datetime import datetime # for figuring out when to stop scraping
+from datetime import timedelta
 from os.path import exists # for checking if files exist
 from os import makedirs
 from re import sub # for string substitution
@@ -30,8 +31,8 @@ username_to_scrape = sys.argv[4].replace("@", "") # username_to_scrape, remove @
 output_directory = sys.argv[5] if sys.argv[5].endswith("/") else sys.argv[5] + "/" # directory to output to
 
 stop_key = "*******************" # string to put at the end of files signaling they are complete
-stop_date = "2023-01-01" # date to stop scraping account
-new_stop_date = "2023-05-17" # sooner date to stop scraping account sooner
+stop_date = datetime.strptime("2023-01-01", "%Y-%m-%d") # date to stop scraping account
+new_stop_date = datetime.now() - timedelta(days = 7) # sooner date to stop scraping account sooner (a week ago)
 
 
 # CREATE DRIVER AND LOGIN
@@ -68,6 +69,7 @@ if exists(accounts_followed_output):
         accounts_followed.add(str(line).strip())
 accounts_followed_writable = open(accounts_followed_output, "a")
 
+# ADJUST STOP DATE
 stop_key_present = False # to avoid double writing stop_key
 if stop_key in accounts_muir or stop_key in accounts_already_scraped:
     stop_key_present = True
@@ -150,7 +152,7 @@ while True:
     date_of_post = driver.driver.find_element("xpath", "//time[@class='_a9ze _a9zf']").get_attribute("datetime")
     date_of_post = date_of_post[0:date_of_post.index("T")] # subset date of post to just include the date
     date_of_post = datetime.strptime(date_of_post, "%Y-%m-%d")
-    if date_of_post < datetime.strptime(stop_date, "%Y-%m-%d"): # if post before January 1, 2023, break the while loop
+    if date_of_post < stop_date: # if post before January 1, 2023, break the while loop
         if not stop_key_present:
             accounts_muir_writable.write(stop_key + "\n") # write
             accounts_already_scraped_writable.write(stop_key + "\n")
@@ -200,7 +202,7 @@ driver.wait(0.5, 1)
 # click the search button
 driver.click_search()
 
-for account in (account for account in accounts_muir if not (account in accounts_followed or account == stop_key)):
+for account in (account for account in accounts_muir if account not in accounts_followed and account != stop_key):
     
     driver.wait(0.75, 1.5)
     
