@@ -31,6 +31,7 @@ output_directory = sys.argv[5] if sys.argv[5].endswith("/") else sys.argv[5] + "
 
 stop_key = "*******************" # string to put at the end of files signaling they are complete
 stop_date = "2023-01-01" # date to stop scraping account
+new_stop_date = "2023-05-17" # sooner date to stop scraping account sooner
 
 
 # CREATE DRIVER AND LOGIN
@@ -71,7 +72,8 @@ stop_key_present = False # to avoid double writing stop_key
 if stop_key in accounts_muir or stop_key in accounts_already_scraped:
     print("All relevant accounts parsed.")
     stop_key_present = True
-    stop_date = "2023-05-18" # reset stop_date to a more sooner, quicker-to-scrape date
+    stop_date = new_stop_date # reset stop_date to a more sooner, quicker-to-scrape date
+del new_stop_date
 
 # FUNCTION FOR CLICKING TO NEXT POST
 def next_post(): # click the next button
@@ -125,7 +127,7 @@ while True:
                                                                                                   "snapchatinsta", "snapchatinstagram", "snapchatig",
                                                                                                   "instasc", "instagramsc", "igsc",
                                                                                                   "scinsta", "scinstagram", "scig")))[-1] # choose the final mention of instagram
-        if any(account[i + 1] == x for x in ("is", "<3", "and", "snap")):
+        if any(account[i + 1] == x for x in ("is", "are", "<3", "and", "snap")):
             if account[i + 1] == "and" and account[i + 2] == "snap":
                 account = account[i + 3][1:] if account[i + 3].startswith("@") else account[i + 3]
             else:
@@ -230,6 +232,7 @@ for account in (account for account in accounts_muir if account not in accounts_
     # click on search again
     driver.click_search()
 
+print("Followed all accounts in accounts.muir.")
 
 # CLOSE OUTPUTS
 accounts_followed_writable.close()
