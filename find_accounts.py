@@ -70,7 +70,6 @@ accounts_followed_writable = open(accounts_followed_output, "a")
 
 stop_key_present = False # to avoid double writing stop_key
 if stop_key in accounts_muir or stop_key in accounts_already_scraped:
-    print("All relevant accounts parsed.")
     stop_key_present = True
     stop_date = new_stop_date # reset stop_date to a more sooner, quicker-to-scrape date
 del new_stop_date
@@ -155,6 +154,7 @@ while True:
         if not stop_key_present:
             accounts_muir_writable.write(stop_key + "\n") # write
             accounts_already_scraped_writable.write(stop_key + "\n")
+        print("All relevant accounts parsed.")
         del date_of_post
         break # if there is no more posts, exit the while loop
     
@@ -234,7 +234,6 @@ for account in (account for account in accounts_muir if account not in accounts_
         driver.driver.find_element("xpath", "//input[@aria-label='Search input']").clear()
     except:
         driver.click_search()
-        driver.driver.find_element("xpath", "//input[@aria-label='Search input']").clear()
 
 print("Followed all accounts in accounts.muir.")
 
