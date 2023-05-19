@@ -229,8 +229,11 @@ for account in (account for account in accounts_muir if account not in accounts_
     accounts_followed.add(account)
     accounts_followed_writable.write(account + "\n")
         
-    # click on search again
-    driver.click_search()
+    # click on search again (click search if input area isn't there)
+    try:
+        driver.driver.find_element("xpath", "//input[@aria-label='Search input']")
+    except:
+        driver.click_search()
 
 print("Followed all accounts in accounts.muir.")
 
