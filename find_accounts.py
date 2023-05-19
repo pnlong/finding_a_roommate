@@ -49,8 +49,7 @@ accounts_muir = set(())
 accounts_muir_output = output_directory + "accounts_muir.txt" # note that output directory already has "/" on the end
 if exists(accounts_muir_output):
     for line in open(accounts_muir_output, "r"):
-        if stop_key not in line:
-            accounts_muir.add(str(line).strip())
+        accounts_muir.add(str(line).strip())
 accounts_muir_writable = open(accounts_muir_output, "a")
 
 # set of accounts that the program has already looked at (no duplicates)
@@ -58,8 +57,7 @@ accounts_already_scraped = set(())
 accounts_already_scraped_output = output_directory + "accounts_already_scraped.txt" # note that output directory already has "/" on the end
 if exists(accounts_already_scraped_output):
     for line in open(accounts_already_scraped_output, "r"):
-        if stop_key not in line:
-            accounts_already_scraped.add(str(line).strip())
+        accounts_already_scraped.add(str(line).strip())
 accounts_already_scraped_writable = open(accounts_already_scraped_output, "a")
 
 # set of accounts that the program has already followed (no duplicates)
@@ -202,7 +200,7 @@ driver.wait(0.5, 1)
 # click the search button
 driver.click_search()
 
-for account in (account for account in accounts_muir if account not in accounts_followed):
+for account in (account for account in accounts_muir if not (account in accounts_followed or account == stop_key)):
     
     driver.wait(0.75, 1.5)
     
