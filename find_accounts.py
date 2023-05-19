@@ -235,7 +235,7 @@ for account in (account for account in accounts_muir if account not in accounts_
     except:
         driver.click_search()
 
-print("Followed all accounts in accounts.muir.")
+print("Followed all relevant accounts.")
 
 # CLOSE OUTPUTS
 accounts_followed_writable.close()
