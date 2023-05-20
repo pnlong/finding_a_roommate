@@ -109,6 +109,7 @@ for account in accounts_to_dm:
     # WRITE ACCOUNT TO ACCOUNTS I HAVE INITIATED CONTACT WITH FILE
     accounts_initiated_contact_writable.write(account + "\n")
     
+print("Intiated contact with all relevant accounts.")
 
 # CLOSE OUTPUTS
 accounts_initiated_contact_writable.close()

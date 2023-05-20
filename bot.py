@@ -318,42 +318,38 @@ for unread_message in unread_messages:
 
 
 # RESPOND TO EACH MESSAGE REQUEST (IF THERE ARE ANY)
-try:
-    # CLICK ON REQUESTS BUTTON
-    driver.driver.find_element("xpath", "//span[contains(text(),'Request')]").click()
+# CLICK ON REQUESTS BUTTON
+driver.driver.find_element("xpath", "//span[text()='Requests']").click()
 
-    # GET A LIST OF REQUESTS
-    requests = driver.driver.find_elements("xpath", "//div/div/div/div/div/div/span/img[@class='x6umtig x1b1mbwd xaqea5y xav7gou xk390pu x5yr21d xpdipgo xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x11njtxf xh8yej3']")
+# GET A LIST OF REQUESTS
+requests = driver.driver.find_elements("xpath", "//div/div/div/div/div/div/span/img[@class='x6umtig x1b1mbwd xaqea5y xav7gou xk390pu x5yr21d xpdipgo xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x11njtxf xh8yej3']")
 
-    # ADDRESS EACH REQUEST
-    for i, request in enumerate(requests):
+# ADDRESS EACH REQUEST
+for i, request in enumerate(requests):
         
-        # GET ACCOUNT NAME
-        account = request.get_attribute("alt")
-        account = account[:len(account) - len("'s profile picture")]
+    # GET ACCOUNT NAME
+    account = request.get_attribute("alt")
+    account = account[:len(account) - len("'s profile picture")]
         
-        # CLICK ON REQUEST
-        request.click()
-        driver.wait(1, 2)
+    # CLICK ON REQUEST
+    request.click()
+    driver.wait(1, 2)
         
-        # CLICK ON ACCEPT
-        driver.driver.find_element("xpath", "//span[text()='Accept']").click()
+    # CLICK ON ACCEPT
+    driver.driver.find_element("xpath", "//span[text()='Accept']").click()
         
-        try:
-            try_to_post(account = account, checking_for_acceptance_letter = True) # vet these users because they were not vetted by @ucsandiego.2027
-        except:
-            failure_protocol(account = account)
+    try:
+        try_to_post(account = account, checking_for_acceptance_letter = True) # vet these users because they were not vetted by @ucsandiego.2027
+    except:
+        failure_protocol(account = account)
         
-        # CLICK ON REQUESTS BUTTON IF IT IS THERE
-        if i <= len(requests) - 2:
-            driver.scroll(a = 800, b = 0, element = driver.driver.find_element("xpath", "//div[@class='_abyk']")) # scroll up in the messages pane to see requests
-            driver.driver.find_element("xpath", "//span[contains(text(),'Request')]").click()
+    # CLICK ON REQUESTS BUTTON IF IT IS THERE
+    if i < len(requests) - 1:
+        driver.scroll(a = 800, b = 0, element = driver.driver.find_element("xpath", "//div[@class='_abyk']")) # scroll up in the messages pane to see requests
+        driver.driver.find_element("xpath", "//span[text()='Requests']").click()
 
-        # REMOVE LOCAL TEMPORARY FILES
-        clear_dir(temporary_output)
-            
-except:
-    pass
+    # REMOVE LOCAL TEMPORARY FILES
+    clear_dir(temporary_output)
 
 
 # OUTPUT VARIOUS FILES
