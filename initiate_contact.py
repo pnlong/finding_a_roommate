@@ -68,45 +68,47 @@ if message == "":
 first_account_to_dm = True
 for account in accounts_to_dm:
     
-    try:
-        # CLICK ON NEW MESSAGE ICON
-        driver.driver.find_element("xpath", "//button[@class='_abl- _abm2']").click()
-        driver.wait(2, 4.5)
+    # CLICK ON NEW MESSAGE ICON
+    driver.driver.find_element("xpath", "//*[name()='svg'][@aria-label='New message']").click()
+    driver.wait(2, 4.5)
         
-        # ENTER ACCCONT NAME
-        driver.simulate_typing(element = driver.driver.find_element("xpath", "//input[@name='queryBox'][@placeholder='Search...']"),
-                               text = account)
-        driver.wait(1, 2)
+    # ENTER ACCCONT NAME
+    driver.simulate_typing(element = driver.driver.find_element("xpath", "//input[@name='queryBox'][@placeholder='Search...']"),
+                           text = account)
+    driver.wait(1, 2)
 
+    try:
         # SELECT ACCOUNT TO DM
         driver.driver.find_element("xpath", f"//span[@class='x1lliihq x193iq5w x6ikm8r x10wlt62 xlyipyv xuxw1ft'][text()='{account}']").click()
         driver.wait(1, 1.5)
-        
-        # CLICK ON NEXT BUTTON
-        driver.driver.find_element("xpath", "//button[@class='_acan _acao _acas _acav _aj1-']/div[text()='Next']").click()
-        driver.wait(2, 3)
-        
-        # CHECK IF THEY HAVE INITIATED CONTACT WITH ME ALREADY
-        if len(driver.driver.find_elements("xpath", "//div[@class='x9f619 xjbqb8w x78zum5 x168nmei x13lgxp2 x5pf9jr xo71vjh x1n2onr6 x1plvlek xryxfnj x1c4vz4f x2lah0s x1q0g3np xqjyukv xuk3077 x1oa3qoh x1nhvcw1']/div[@class='_ac72']/div/div/div[@class='_acqt _acqu']/div/div/div/div/*")) != 0:
-            continue
-        
-        # SEND MESSAGE, ALSO DETERMINE HOW FAST TO TYPE
-        if first_account_to_dm: # if first iteration, type out the message slowly
-            scalar = 3.0
-            first_account_to_dm = False # update boolean
-        else: # not the first iteration
-            scalar = 0.0
-        driver.send_message(text = message, scalar = scalar)
-        driver.wait(0.5, 1.5)
-        
-        # WRITE ACCOUNT TO ACCOUNTS I HAVE INITIATED CONTACT WITH FILE
-        accounts_initiated_contact_writable.write(account + "\n")
-
+    
     except:
-        driver.wait(1.5, 2) # if for some reason the account doesn't exist anymore or something, wait, and move on
+        # if for some reason the account doesn't exist anymore or something, wait, and move on
+        driver.wait(1.5, 2)
         driver.driver.find_element("xpath", "//div[@class='_abm0']/*[name()='svg'][@aria-label='Close']").click()
         driver.wait(0.5, 1.5)
-
+        continue
+        
+    # CLICK ON NEXT BUTTON
+    driver.driver.find_element("xpath", "//button[@class='_acan _acao _acas _acav _aj1-']/div[text()='Next']").click()
+    driver.wait(2, 3)
+    
+    # CHECK IF THEY HAVE INITIATED CONTACT WITH ME ALREADY
+    if len(driver.driver.find_elements("xpath", "//div[@class='x9f619 xjbqb8w x78zum5 x168nmei x13lgxp2 x5pf9jr xo71vjh x1n2onr6 x1plvlek xryxfnj x1c4vz4f x2lah0s x1q0g3np xqjyukv xuk3077 x1oa3qoh x1nhvcw1']/div[@class='_ac72']/div/div/div[@class='_acqt _acqu']/div/div/div/div/*")) != 0:
+        continue
+        
+    # SEND MESSAGE, ALSO DETERMINE HOW FAST TO TYPE
+    if first_account_to_dm: # if first iteration, type out the message slowly
+        scalar = 3.0
+        first_account_to_dm = False # update boolean
+    else: # not the first iteration
+        scalar = 0.0
+    driver.send_message(text = message, scalar = scalar)
+    driver.wait(0.5, 1.5)
+        
+    # WRITE ACCOUNT TO ACCOUNTS I HAVE INITIATED CONTACT WITH FILE
+    accounts_initiated_contact_writable.write(account + "\n")
+    
 
 # CLOSE OUTPUTS
 accounts_initiated_contact_writable.close()
