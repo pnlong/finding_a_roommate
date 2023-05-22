@@ -22,7 +22,7 @@ from os.path import exists, dirname # for checking if files exist and determinin
 driver_address = sys.argv[1] # driver_address
 username = sys.argv[2].replace("@", "") # username, remove @ symbol if included
 password = sys.argv[3] # password
-accounts_muir_output = sys.argv[4] # accounts_to_dm
+accounts_followed_output = sys.argv[4] # accounts_to_dm
 
 stop_key = "*******************" # string to put at the end of files signaling they are complete
 
@@ -30,19 +30,34 @@ stop_key = "*******************" # string to put at the end of files signaling t
 driver = instagram_driver(driver_address = driver_address, username = username, password = password) # create instance of chrome driver
 driver.login()
 
+# GET THE LIST OF FOLLOWERS
+driver.driver.find_element("xpath", f"//a[@href='/{username}/']").click()
+driver.wait(4, 5)
+driver.driver.find_element("xpath", f"//a[@href='/{username}/followers/']").click()
+driver.wait(2, 3)
+driver.scroll_to_bottom(element = driver.driver.find_element("xpath", "//div[@class='_aano']"), scalar = 0.5) # load in all followers
+followers = set(())
+for element in driver.driver.find_elements("xpath", "//div/a[@class='x1i10hfl xjbqb8w x6umtig x1b1mbwd xaqea5y xav7gou x9f619 x1ypdohk xt0psk2 xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x16tdsg8 x1hl2dhg xggy1nq x1a2a7pz notranslate _a6hd']"):
+    account = element.get_attribute("href").split("/")
+    followers.add(account[len(account) - 2])
+driver.wait(2, 3)
+driver.driver.find_element("xpath", f"//*[name()='svg'][@aria-label='Close']").click()
+driver.wait(2, 3)
+
+
 # CLICK ON DM BUTTON
 driver.click_messages()
-
+driver.wait(4, 5)
 
 # READ IN FILES, CREATE SETS
-accounts_muir = set(()) # set of accounts that mention muir (no duplicates)
-if exists(accounts_muir_output):
-    for line in open(accounts_muir_output):
+accounts_followed = set(()) # set of accounts that I have followed first (no duplicates)
+if exists(accounts_followed_output):
+    for line in open(accounts_followed_output):
         if stop_key not in line:
-            accounts_muir.add(str(line).strip())
+            accounts_followed.add(str(line).strip())
 
 accounts_initiated_contact = set(()) # set of accounts that the program might have initiated contact with (no duplicates)
-accounts_initiated_contact_output = dirname(accounts_muir_output) + "/accounts_initiated_contact.txt"
+accounts_initiated_contact_output = dirname(accounts_followed_output) + "/accounts_initiated_contact.txt"
 if exists(accounts_initiated_contact_output):
     for line in open(accounts_initiated_contact_output):
         accounts_initiated_contact.add(str(line).strip())
@@ -50,23 +65,16 @@ accounts_initiated_contact_writable = open(accounts_initiated_contact_output, "a
 
 unread_messages = driver.driver.find_elements("xpath", "//div[@aria-label='Unread']")
 unread_messages = list(element.find_element("xpath", "./../../../../../..") for element in unread_messages)
-unread_accounts = ["", ] * len(unread_messages)
-for i in range(len(unread_messages)):
-    account = unread_messages[i].find_element("xpath", "./div/div/div/div/div/div/span/img[@class='x6umtig x1b1mbwd xaqea5y xav7gou xk390pu x5yr21d xpdipgo xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x11njtxf xh8yej3']").get_attribute("alt")
-    unread_accounts[i] = account[:len(account) - len("'s profile picture")]
+unread_accounts = set(())
+for unread_message in unread_messages:
+    account = unread_message.find_element("xpath", "./div/div/div/div/div/div/span/img[@class='x6umtig x1b1mbwd xaqea5y xav7gou xk390pu x5yr21d xpdipgo xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x11njtxf xh8yej3']").get_attribute("alt")
+    unread_accounts.add(account[:len(account) - len("'s profile picture")])
     del account
 del unread_messages
 
-accounts_to_dm = set((account for account in accounts_muir if not (account in accounts_initiated_contact or account in unread_accounts)))
-del accounts_muir, accounts_initiated_contact, unread_accounts
 
-# DM ACCOUNTS
-message = "Hi fellow Muiron! Congratulations on your acceptance! I created this account to deal with the backlog on @ucsandiego.2027; at the same time, a lot of the people posted to the account were irrelevant to me, since they were not in Muir and I cannot room with them. Would you like to be posted to this account? If yes, please respond by sending 3-5 pictures of yourself + a bio, in that order (personally, I would reuse what I sent / plan to send to @ucsandiego.2027). If no, just don't respond. Though this account is supervised by a real person, many of its functions are automated, so if you could abide by the aforementioned rules, it would make the posting process a lot smoother. Thanks for your time, and again, congrats!"
-if message == "":
-    print("Error: faulty message. Message must be at least one character long.")
-    quit()
-first_account_to_dm = True
-for account in accounts_to_dm:
+# FUNCTION FOR INITIATING CONTACT
+def initiate_contact(account, message):
     
     # CLICK ON NEW MESSAGE ICON
     driver.driver.find_element("xpath", "//*[name()='svg'][@aria-label='New message']").click()
@@ -87,7 +95,7 @@ for account in accounts_to_dm:
         driver.wait(1.5, 2)
         driver.driver.find_element("xpath", "//*[name()='svg'][@aria-label='Close']").click()
         driver.wait(0.5, 1.5)
-        continue
+        return False
         
     # CLICK ON CHAT BUTTON
     driver.driver.find_element("xpath", "//div[@role='button'][text()='Chat']").click()
@@ -95,20 +103,38 @@ for account in accounts_to_dm:
     
     # CHECK IF THEY HAVE INITIATED CONTACT WITH ME ALREADY
     if len(driver.driver.find_elements("xpath", "//div[@class='x1cy8zhl x78zum5 xdt5ytf x193iq5w x1n2onr6']")) > 0:
-        continue
+        return False
         
     # SEND MESSAGE, ALSO DETERMINE HOW FAST TO TYPE
-    if first_account_to_dm: # if first iteration, type out the message slowly
-        scalar = 3.0
-        first_account_to_dm = False # update boolean
-    else: # not the first iteration
-        scalar = 0.0
-    driver.send_message(text = message, scalar = scalar)
-    driver.wait(0.5, 1.5)
+    driver.send_message(text = message, scalar = 0.25)
+    driver.wait(1.5, 2)
         
     # WRITE ACCOUNT TO ACCOUNTS I HAVE INITIATED CONTACT WITH FILE
+    accounts_initiated_contact.add(account)
     accounts_initiated_contact_writable.write(account + "\n")
     
+    return True
+
+# FUNCTION FOR CHECKING FAULTY MESSAGES
+def check_if_message_is_faulty(message):
+    if message == "":
+        print("Error: faulty message. Message must be at least one character long.")
+        quit()
+
+
+# DM ACCOUNTS THAT I FOLLOWED FIRST
+message = "Hi fellow Muiron! Congratulations on your acceptance! I created this account to deal with the backlog on @ucsandiego.2027; at the same time, a lot of the people posted to the account were irrelevant to me, since they were not in Muir and I cannot room with them. Would you like to be posted to this account? If yes, please respond by sending 3-5 pictures of yourself + a bio, in that order (personally, I would reuse what I sent / plan to send to @ucsandiego.2027). If no, just don't respond. Though this account is supervised by a real person, many of its functions are automated, so if you could abide by the aforementioned rules, it would make the posting process a lot smoother. Thanks for your time, and again, congrats!"
+check_if_message_is_faulty(message = message)
+for account in set((account for account in accounts_followed if not (account in accounts_initiated_contact or account in unread_accounts))):
+    initiate_contact(account = account, message = message)
+    
+# DM ACCOUNTS THAT FOLLOW ME THAT I DIDN'T FOLLOW FIRST
+message = "Hi! Would you like to be posted to this account? If yes, could you please send a screenshot of your acceptance letter? If no, you don't need to send anything."
+check_if_message_is_faulty(message = message)
+for account in set((account for account in followers if not(account in accounts_initiated_contact or account in accounts_followed))):
+    initiate_contact(account = account, message = message)    
+
+del accounts_followed, accounts_initiated_contact, unread_accounts
 print("Intiated contact with all relevant accounts.")
 
 # CLOSE OUTPUTS

@@ -285,8 +285,8 @@ def failure_protocol(account):
 
 
 # GET A LIST OF UNREAD MESSAGES
-driver.scroll(a = 0, b = 800, element = driver.driver.find_element("xpath", "//div[@class='_abyk']")) # scroll down in the messages pane
-unread_messages = driver.driver.find_elements("xpath", "//div[@aria-label='Unread']")
+driver.scroll_to_bottom(element = driver.driver.find_element("xpath", "//div[@data-pagelet='IGDThreadList']/div[@aria-label='Chats']/div/div/div"), scalar = 0.5) # scroll down in the messages pane
+unread_messages = driver.driver.find_elements("xpath", "//span[@class='x3nfvp2 x1emribx x1tu34mt x13fuv20 xu3j5b3 x1q0q8m5 x26u7qi xdk7pt x1xc55vz x972fbf xcfux6l x1qhh985 xm0m39n x14yjl9h xudhj91 x18nykt9 xww2gxu']")
 unread_messages = list(element.find_element("xpath", "./../../../../../..") for element in unread_messages)
 
 # RESPOND TO EACH UNREAD MESSAGE
@@ -319,7 +319,7 @@ for unread_message in unread_messages:
 
 # RESPOND TO EACH MESSAGE REQUEST (IF THERE ARE ANY)
 # CLICK ON REQUESTS BUTTON
-driver.driver.find_element("xpath", "//span[text()='Requests']").click()
+driver.driver.find_element("xpath", "//span[@class='x1lliihq x1plvlek xryxfnj x1n2onr6 x193iq5w xeuugli x1fj9vlw x13faqbe x1vvkbs x1s928wv xhkezso x1gmr53x x1cpjm7i x1fgarty x1943h6x x1i0vuye xvs91rp x1s688f x1roi4f4 x10wh9bi x1wdrske x8viiok x18hxmgj']").click()
 
 # GET A LIST OF REQUESTS
 requests = driver.driver.find_elements("xpath", "//div/div/div/div/div/div/span/img[@class='x6umtig x1b1mbwd xaqea5y xav7gou xk390pu x5yr21d xpdipgo xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x11njtxf xh8yej3']")
