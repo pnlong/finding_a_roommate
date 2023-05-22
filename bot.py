@@ -89,13 +89,15 @@ clear_dir(temporary_output) # clear in case there is anything
 def get_chats():
     
     # get DMs (only from other user, since mine are irrelevant)
-    chats = driver.driver.find_elements("xpath", "//div[@class='x9f619 xjbqb8w x78zum5 x168nmei x13lgxp2 x5pf9jr xo71vjh x1n2onr6 x1plvlek xryxfnj x1c4vz4f x2lah0s x1q0g3np xqjyukv xuk3077 x1oa3qoh x1nhvcw1']/div[@class='_ac72']/div/div/div[@class='_acqt _acqu']/div/div/div/div/*")
+    chats = driver.driver.find_elements("xpath", "//div[@class='x1qjc9v5 x6umtig x1b1mbwd xaqea5y xav7gou x9f619 x78zum5 xdt5ytf x2lah0s xk390pu xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x1n2onr6 xggy1nq x11njtxf']/div[@class='x78zum5 xh8yej3']/div[@class='x1cy8zhl x78zum5 xdt5ytf x193iq5w x1n2onr6']")
     
     # create list of dms; note the source link for image and video (media)
     for i, chat in enumerate(chats):
         if chat.text != "": # deal with text
             chats[i] = ("text", chat.text)
-        elif chat.tag_name == "img": # deal with images
+            continue
+        chat = chat.find_element("xpath", "./div/div/div/div/div/div/div/div/div/*")
+        if chat.tag_name == "img": # deal with images
             chats[i] = ("image", chat.get_attribute("src"))
         elif chat.tag_name == "video": # deal with videos
             chats[i] = ("video", chat.find_element("xpath", f"./source").get_attribute("src"))
@@ -219,10 +221,10 @@ def image_is_acceptance_letter(image_url):
     return "muir" in image_text.lower()
 
 # try to post, given that the bot is already in the chat with the other person
-def try_to_post(account, checking_for_acceptance_letter):
+def try_to_post(account, account_name, checking_for_acceptance_letter):
     
     # get chats
-    driver.scroll(a = 600, b = 0, element = driver.driver.find_element("xpath", "//div[@class='_ab5z _ab5_']")) # scroll up to load in DMs
+    driver.scroll_to_end(element = driver.driver.find_element("xpath", "//div[@data-pagelet='IGDOpenMessageList']/div/div/div/div/div"), direction = -1, scalar = 0.5) # scroll up to load in DMs
     chats = get_chats()
     
     # determine caption
@@ -244,11 +246,10 @@ def try_to_post(account, checking_for_acceptance_letter):
         return None
     
     if acceptance_letter_present and len(media_filepaths) == 0: # if there is no media other than screenshot of acceptance letter
-        driver.send_message(text = "Hi fellow Muiron! Thanks for sending in your acceptance letter. Congratulations! Please send 3-5 pictures of yourself + a bio, in that order (personally, I would reuse what I sent / plan to send to @ucsandiego.2027). Though this account is supervised by a real person, many of its functions are automated, so if you could abide by the aforementioned rules, it would make the posting process a lot smoother. Thanks for your time, and again, congrats!")
+        driver.send_message(text = "Thanks for sending in your acceptance letter. Congratulations! Please send 3-5 pictures of yourself + a bio, in that order (personally, I would reuse what I sent / plan to send to @ucsandiego.2027). Though this account is supervised by a real person, many of its functions are automated, so if you could abide by the aforementioned rules, it would make the posting process a lot smoother. Thanks for your time, and again, congrats!")
         return None
     
     if not acceptance_letter_present and len(media_filepaths) == 0: # not checking_for_acceptance_letter is implied from first if statement
-        driver.send_message(text = "Hi! Congratulations on your acceptance! Would you like to be posted to this account? If yes, please respond by sending 3-5 pictures of yourself + a bio, in that order (personally, I would reuse what I sent / plan to send to @ucsandiego.2027). If no, just don't respond. Though this account is supervised by a real person, many of its functions are automated, so if you could abide by the aforementioned rules, it would make the posting process a lot smoother. Thanks for your time, and again, congrats!")
         return None
     
     # no need to return to messages at this point because we never left messages pane to begin with
@@ -262,20 +263,20 @@ def try_to_post(account, checking_for_acceptance_letter):
         
     # send dm confirming post
     driver.click_messages() # return to Messages pane
-    driver.driver.find_element("xpath", f"//img[@alt=\"{account}'s profile picture\"]").click() # return to Chat with person
-    driver.send_message(text = "Your information has been posted! Please notify me if there are any issues with your post.")
     
     # write to file
+    driver.driver.find_element("xpath", f"//span[text()='{account_name}']").click()
+    driver.send_message(text = "You information has been successfully posted. Please reach out if there are any issues.")
     accounts_success_writable.write(account + "\n")
     accounts_success.add(account)
 
 # protocol for if info fails to be posted for some reason
-def failure_protocol(account):
+def failure_protocol(account, account_name):
     # go to dms in case I'm not already there
     driver.click_messages()
 
     # click on message
-    driver.driver.find_element("xpath", f"//img[@alt=\"{account}'s profile picture\"]").click()
+    driver.driver.find_element("xpath", f"//span[text()='{account_name}']").click()
     driver.wait(1, 2)
         
     # send error message
@@ -285,9 +286,9 @@ def failure_protocol(account):
 
 
 # GET A LIST OF UNREAD MESSAGES
-driver.scroll_to_bottom(element = driver.driver.find_element("xpath", "//div[@data-pagelet='IGDThreadList']/div[@aria-label='Chats']/div/div/div"), scalar = 0.5) # scroll down in the messages pane
+driver.scroll_to_end(element = driver.driver.find_element("xpath", "//div[@data-pagelet='IGDThreadList']/div[@aria-label='Chats']/div/div/div"), direction = +1, scalar = 0.5) # scroll down in the messages pane
 unread_messages = driver.driver.find_elements("xpath", "//span[@class='x3nfvp2 x1emribx x1tu34mt x13fuv20 xu3j5b3 x1q0q8m5 x26u7qi xdk7pt x1xc55vz x972fbf xcfux6l x1qhh985 xm0m39n x14yjl9h xudhj91 x18nykt9 xww2gxu']")
-unread_messages = list(element.find_element("xpath", "./../../../../../..") for element in unread_messages)
+unread_messages = list(element.find_element("xpath", "./../../../..") for element in unread_messages)
 
 # RESPOND TO EACH UNREAD MESSAGE
 # A DM will pop up in the normal messages tab if I follow the account
@@ -295,23 +296,26 @@ unread_messages = list(element.find_element("xpath", "./../../../../../..") for 
 # This means there is no requirement for the people to show their acceptance letter
 for unread_message in unread_messages:
     
-    # GET ACCOUNT NAME
-    account = unread_message.find_element("xpath", "./div/div/div/div/div/div/span/img[@class='x6umtig x1b1mbwd xaqea5y xav7gou xk390pu x5yr21d xpdipgo xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x11njtxf xh8yej3']").get_attribute("alt")
-    account = account[:len(account) - len("'s profile picture")]
-    
-    if account in accounts_success: # if I have already succesfully posted this account, skip and let me deal with it manually
-        accounts_concern.add(account) # add to accounts concern so I can see what else they have to say
-        continue
+    driver.wait(1, 2)
     
     # CLICK ON MESSAGE
     unread_message.click()
     driver.wait(1, 2)
     
+    # GET ACCOUNT NAME
+    account_name = unread_message.find_element("xpath", "./div/div/div[@class='x9f619 xjbqb8w x78zum5 x168nmei x13lgxp2 x5pf9jr xo71vjh x1uhb9sk x1plvlek xryxfnj x1c4vz4f x2lah0s x1q0g3np xqjyukv x6s0dn4 x1oa3qoh x1nhvcw1']/span[@class='x1lliihq x1plvlek xryxfnj x1n2onr6 x193iq5w xeuugli x1fj9vlw x13faqbe x1vvkbs x1s928wv xhkezso x1gmr53x x1cpjm7i x1fgarty x1943h6x x1i0vuye xvs91rp xo1l8bm x5n08af x1tu3fi x3x7a5m x10wh9bi x1wdrske x8viiok x18hxmgj']/span[@class='x1lliihq x193iq5w x6ikm8r x10wlt62 xlyipyv xuxw1ft']").text
+    account = unread_message.find_element("xpath", "//a[@class='x1i10hfl x1qjc9v5 xjbqb8w xjqpnuy xa49m3k xqeqjp1 x2hbi6w x13fuv20 xu3j5b3 x1q0q8m5 x26u7qi x972fbf xcfux6l x1qhh985 xm0m39n x9f619 x1ypdohk xdl72j9 x2lah0s xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r x2lwn1j xeuugli xexx8yu x4uap5 x18d9i69 xkhd6sd x1n2onr6 x16tdsg8 x1hl2dhg xggy1nq x1ja2u2z x1t137rt x1o1ewxj x3x9cwd x1e5q0jg x13rtm0m x1q0g3np x87ps6o x1lku1pv x1a2a7pz xjp7ctv xeq5yr9']").get_attribute("href")
+    account = account.split("/")[-1]
+    
+    if account in accounts_success: # if I have already succesfully posted this account, skip and let me deal with it manually
+        accounts_concern.add(account) # add to accounts concern so I can see what else they have to say
+        continue
+    
     # TRY TO POST
     try:
-        try_to_post(account = account, checking_for_acceptance_letter = False) # no need to vet these users, because @ucsandiego.2027 has already done so
+        try_to_post(account = account, account_name = account_name, checking_for_acceptance_letter = False) # no need to vet these users, because @ucsandiego.2027 has already done so
     except: # if it didn't work for some reason
-        failure_protocol(account = account)
+        failure_protocol(account = account, account_name = account_name)
     
     # REMOVE LOCAL TEMPORARY FILES
     clear_dir(temporary_output)

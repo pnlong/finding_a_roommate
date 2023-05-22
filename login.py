@@ -168,11 +168,11 @@ class instagram_driver:
         del a, b, d, n
 
     # a function that scrolls to the bottom of an element
-    def scroll_to_bottom(self, element, scalar = s):
+    def scroll_to_end(self, element, direction, scalar = s): # if direction is negative, scrolls to top; positive, scrolls to bottom
         a0 = None
         a = self.driver.execute_script("return arguments[0].scrollTop;", element)
         while a != a0:
-            self.scroll(a = a, b = a + (100 * m), scalar = scalar, element = element)
+            self.scroll(a = a, b = a + (direction * 100 * m), scalar = scalar, element = element)
             self.wait(0.5, 1)
             a0 = a
             a = self.driver.execute_script("return arguments[0].scrollTop;", element)
