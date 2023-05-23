@@ -77,7 +77,7 @@ del unread_messages
 def initiate_contact(account, message):
     
     # CLICK ON NEW MESSAGE ICON
-    driver.driver.find_element("xpath", "//*[name()='svg'][@aria-label='New message']").click()
+    driver.driver.find_element("xpath", "//*[@aria-label='New message']").click()
     driver.wait(2, 4.5)
         
     # ENTER ACCCONT NAME

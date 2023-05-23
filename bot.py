@@ -46,6 +46,7 @@ driver.login()
 
 # GO TO DMS
 driver.click_messages()
+messages_window_scrollable_xpath = "//div[@data-pagelet='IGDThreadList']/div[@aria-label='Chats']/div/div/div"
 
 
 # READ IN FILES, CREATE SETS
@@ -232,6 +233,7 @@ def try_to_post(account, account_name, checking_for_acceptance_letter):
     if "ERROR" in list(map(lambda x: x.upper(), caption)): # if any chat is ERROR, add to accounts concern and have me manually review it
         accounts_concern_writable.write(account + "\n")
         accounts_concern.add(account)
+        driver.click_messages()
         return None
     caption.sort(key = len) # sort caption by string length; the longest string is almost always the desired caption
     caption = caption[len(caption) - 1] # the longest string is the last string
@@ -243,13 +245,16 @@ def try_to_post(account, account_name, checking_for_acceptance_letter):
     
     if checking_for_acceptance_letter and not acceptance_letter_present: # if no acceptance letter present, and I am checking for acceptance letter
         driver.send_message(text = "Hi! Thanks for your interest in this account. Could you please send a screenshot of your acceptance letter showing that you are in Muir? Some of the functions of this account are automated, so if this IS an error, please respond with ERROR (in all caps) for the account administrator to manually review your submission.")
+        driver.click_messages()
         return None
     
     if acceptance_letter_present and len(media_filepaths) == 0: # if there is no media other than screenshot of acceptance letter
         driver.send_message(text = "Thanks for sending in your acceptance letter. Congratulations! Please send 3-5 pictures of yourself + a bio, in that order (personally, I would reuse what I sent / plan to send to @ucsandiego.2027). Though this account is supervised by a real person, many of its functions are automated, so if you could abide by the aforementioned rules, it would make the posting process a lot smoother. Thanks for your time, and again, congrats!")
+        driver.click_messages()
         return None
     
     if not acceptance_letter_present and len(media_filepaths) == 0: # not checking_for_acceptance_letter is implied from first if statement
+        driver.click_messages()
         return None
     
     # no need to return to messages at this point because we never left messages pane to begin with
@@ -263,42 +268,57 @@ def try_to_post(account, account_name, checking_for_acceptance_letter):
         
     # send dm confirming post
     driver.click_messages() # return to Messages pane
+    driver.scroll_to_end(element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), direction = +1, scalar = 0.5)
+    driver.scroll_to_end(element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), direction = -1, scalar = 0.1)
+    return_account = driver.driver.find_element("xpath", f"//span[text()='{account_name}']")
+    driver.scroll(a = 0, b = return_account.location["y"], element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), scalar = 0.5)
+    return_account.click()
+    del return_account
+    driver.wait(0.5, 1)
+    driver.send_message(text = "You information has been successfully posted. Please reach out if there are any issues.")
     
     # write to file
-    driver.driver.find_element("xpath", f"//span[text()='{account_name}']").click()
-    driver.send_message(text = "You information has been successfully posted. Please reach out if there are any issues.")
     accounts_success_writable.write(account + "\n")
     accounts_success.add(account)
+    
+    driver.wait(1, 2)
 
 # protocol for if info fails to be posted for some reason
 def failure_protocol(account, account_name):
     # go to dms in case I'm not already there
     driver.click_messages()
-
-    # click on message
-    driver.driver.find_element("xpath", f"//span[text()='{account_name}']").click()
-    driver.wait(1, 2)
+    driver.scroll_to_end(element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), direction = +1, scalar = 0.5)
+    driver.scroll_to_end(element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), direction = -1, scalar = 0.1)
+    return_account = driver.driver.find_element("xpath", f"//span[text()='{account_name}']")
+    driver.scroll(a = 0, b = return_account.location["y"], element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), scalar = 0.5)
+    return_account.click()
+    del return_account
+    driver.wait(0.5, 1)
         
     # send error message
     driver.send_message(text = "Unfortunately, there was an error in the posting process. I have notified the account administrator, who will deal with the issue personally as soon as possible.")
     accounts_concern_writable.write(account + "\n")
     accounts_concern.add(account)
+    
+    driver.wait(1, 2)
 
 
 # GET A LIST OF UNREAD MESSAGES
-driver.scroll_to_end(element = driver.driver.find_element("xpath", "//div[@data-pagelet='IGDThreadList']/div[@aria-label='Chats']/div/div/div"), direction = +1, scalar = 0.5) # scroll down in the messages pane
-unread_messages = driver.driver.find_elements("xpath", "//span[@class='x3nfvp2 x1emribx x1tu34mt x13fuv20 xu3j5b3 x1q0q8m5 x26u7qi xdk7pt x1xc55vz x972fbf xcfux6l x1qhh985 xm0m39n x14yjl9h xudhj91 x18nykt9 xww2gxu']")
-unread_messages = list(element.find_element("xpath", "./../../../..") for element in unread_messages)
+driver.scroll_to_end(element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), direction = +1, scalar = 0.5) # scroll down in the messages pane
+unread_messages = list(element.find_element("xpath", "./../../../..") for element in driver.driver.find_elements("xpath", "//span[@class='x3nfvp2 x1emribx x1tu34mt x13fuv20 xu3j5b3 x1q0q8m5 x26u7qi xdk7pt x1xc55vz x972fbf xcfux6l x1qhh985 xm0m39n x14yjl9h xudhj91 x18nykt9 xww2gxu']"))
 
 # RESPOND TO EACH UNREAD MESSAGE
 # A DM will pop up in the normal messages tab if I follow the account
 # The instagram account controlled by the bot should only follow people previously vetted by @ucsandiego.2027
 # This means there is no requirement for the people to show their acceptance letter
-for unread_message in unread_messages:
+while len(unread_messages) > 0:
     
     driver.wait(1, 2)
     
     # CLICK ON MESSAGE
+    unread_message = unread_messages[0]
+    driver.scroll_to_end(element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), direction = -1, scalar = 0.1) # scroll to top of messages pane
+    driver.scroll(a = 0, b = unread_message.location["y"], element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), scalar = 0.5)
     unread_message.click()
     driver.wait(1, 2)
     
@@ -319,41 +339,61 @@ for unread_message in unread_messages:
     
     # REMOVE LOCAL TEMPORARY FILES
     clear_dir(temporary_output)
+    
+    # UPDATE UNREAD MESSAGES
+    unread_messages = list(element.find_element("xpath", "./../../../..") for element in driver.driver.find_elements("xpath", "//span[@class='x3nfvp2 x1emribx x1tu34mt x13fuv20 xu3j5b3 x1q0q8m5 x26u7qi xdk7pt x1xc55vz x972fbf xcfux6l x1qhh985 xm0m39n x14yjl9h xudhj91 x18nykt9 xww2gxu']"))
+
+print("Finished responding to unread messages.")
 
 
 # RESPOND TO EACH MESSAGE REQUEST (IF THERE ARE ANY)
 # CLICK ON REQUESTS BUTTON
-driver.driver.find_element("xpath", "//span[@class='x1lliihq x1plvlek xryxfnj x1n2onr6 x193iq5w xeuugli x1fj9vlw x13faqbe x1vvkbs x1s928wv xhkezso x1gmr53x x1cpjm7i x1fgarty x1943h6x x1i0vuye xvs91rp x1s688f x1roi4f4 x10wh9bi x1wdrske x8viiok x18hxmgj']").click()
+requests_xpath = "//span[@class='x1lliihq x1plvlek xryxfnj x1n2onr6 x193iq5w xeuugli x1fj9vlw x13faqbe x1vvkbs x1s928wv xhkezso x1gmr53x x1cpjm7i x1fgarty x1943h6x x1i0vuye xvs91rp x1s688f x1roi4f4 x10wh9bi x1wdrske x8viiok x18hxmgj']"
+driver.driver.find_element("xpath", requests_xpath).click()
+driver.wait(1, 2)
 
 # GET A LIST OF REQUESTS
-requests = driver.driver.find_elements("xpath", "//div/div/div/div/div/div/span/img[@class='x6umtig x1b1mbwd xaqea5y xav7gou xk390pu x5yr21d xpdipgo xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x11njtxf xh8yej3']")
+requested_chats_xpath = "//div[@class='x1i10hfl x1qjc9v5 xjbqb8w xjqpnuy xa49m3k xqeqjp1 x2hbi6w x13fuv20 xu3j5b3 x1q0q8m5 x26u7qi x972fbf xcfux6l x1qhh985 xm0m39n x9f619 x1ypdohk xdl72j9 x2lah0s xe8uvvx x2lwn1j xeuugli x1n2onr6 x16tdsg8 x1hl2dhg xggy1nq x1ja2u2z x1t137rt x1q0g3np x87ps6o x1lku1pv x1a2a7pz x168nmei x13lgxp2 x5pf9jr xo71vjh x1lliihq xdj266r x11i5rnm xat24cr x1mh8g0r xg6hnt2 x18wri0h x1l895ks xbbxn1n xxbr6pl x1y1aw1k xwib8y2']"
+requests = driver.driver.find_elements("xpath", requested_chats_xpath)
+requests = requests[:len(requests) - 1] # remove hidden requests
 
 # ADDRESS EACH REQUEST
-for i, request in enumerate(requests):
+while len(requests) > 0:
         
-    # GET ACCOUNT NAME
-    account = request.get_attribute("alt")
-    account = account[:len(account) - len("'s profile picture")]
-        
-    # CLICK ON REQUEST
+    request = requests[0]
+    driver.wait(1, 2)
+    
+    # CLICK ON MESSAGE
     request.click()
     driver.wait(1, 2)
+    
+    # GET ACCOUNT NAME
+    account_header = driver.driver.find_element("xpath", "//div[@class='x9f619 x1n2onr6 x1ja2u2z x78zum5 xdt5ytf x193iq5w xeuugli x1r8uery x1iyjqo2 xs83m0k xsyo7zv x16hj40l x10b6aqq x1yrsyyn']")
+    account_name = account_header.text
+    account = account_header.find_element("xpath", "./a").get_attribute("href")
+    account = account.split("/")[-1]
+    del account_header
         
     # CLICK ON ACCEPT
-    driver.driver.find_element("xpath", "//span[text()='Accept']").click()
+    driver.driver.find_element("xpath", "//div[text()='Accept']").click()
         
     try:
-        try_to_post(account = account, checking_for_acceptance_letter = True) # vet these users because they were not vetted by @ucsandiego.2027
+        try_to_post(account = account, account_name = account_name, checking_for_acceptance_letter = True) # vet these users because they were not vetted by @ucsandiego.2027
     except:
-        failure_protocol(account = account)
+        failure_protocol(account = account, account_name = account_name)
         
     # CLICK ON REQUESTS BUTTON IF IT IS THERE
-    if i < len(requests) - 1:
-        driver.scroll(a = 800, b = 0, element = driver.driver.find_element("xpath", "//div[@class='_abyk']")) # scroll up in the messages pane to see requests
-        driver.driver.find_element("xpath", "//span[text()='Requests']").click()
+    driver.scroll_to_end(element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), direction = -1, scalar = 0.5) # scroll up in the messages pane
+    driver.wait(0.5, 1)
+    driver.driver.find_element("xpath", requests_xpath).click()
+    driver.wait(1, 2)
+    requests = driver.driver.find_elements("xpath", requested_chats_xpath) # update requests
+    requests = requests[:len(requests) - 1] # remove hidden requests
 
     # REMOVE LOCAL TEMPORARY FILES
     clear_dir(temporary_output)
+
+print("Finished responding to requests.")
 
 
 # OUTPUT VARIOUS FILES
