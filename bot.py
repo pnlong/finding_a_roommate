@@ -219,7 +219,7 @@ def image_is_acceptance_letter(image_url):
     image_text = pytesseract.image_to_string(Image.open(image_filepath)) # OCR
     remove(image_filepath) # remove image file
     del image_filepath
-    return "muir" in image_text.lower()
+    return any(keyword in image_text.lower().replace("\n", "") for keyword in ("muir", "triton", "san diego", "2027", "150,000", "application", "admission"))
 
 # try to post, given that the bot is already in the chat with the other person
 def try_to_post(account, account_name, checking_for_acceptance_letter):
@@ -230,6 +230,11 @@ def try_to_post(account, account_name, checking_for_acceptance_letter):
     
     # determine caption
     caption = list(chat[1] for chat in chats if chat[0] == "text")
+    if "Use latest app\nUse the latest version of the Instagram app to see this type of message" in caption:
+        driver.send_message(text = "I know this sounds weird, but could you resend your pictures one-by-one? I use an old version of Instagram and I can't download the collection of pictures you sent. Thanks!")
+        driver.click_messages()
+        return None
+
     if "ERROR" in list(map(lambda x: x.upper(), caption)): # if any chat is ERROR, add to accounts concern and have me manually review it
         accounts_concern_writable.write(account + "\n")
         accounts_concern.add(account)
@@ -249,6 +254,10 @@ def try_to_post(account, account_name, checking_for_acceptance_letter):
         return None
     
     if acceptance_letter_present and len(media_filepaths) == 0: # if there is no media other than screenshot of acceptance letter
+        driver.send_message(text = "Thanks for sending in your acceptance letter. Congratulations! Please send 3-5 pictures of yourself + a bio, in that order (personally, I would reuse what I sent / plan to send to @ucsandiego.2027). Though this account is supervised by a real person, many of its functions are automated, so if you could abide by the aforementioned rules, it would make the posting process a lot smoother. Thanks for your time, and again, congrats!")
+        driver.click_messages()
+        return None
+    elif acceptance_letter_present and len(media_filepaths) == 0: # if there is no media other than screenshot of acceptance letter
         driver.send_message(text = "Thanks for sending in your acceptance letter. Congratulations! Please send 3-5 pictures of yourself + a bio, in that order (personally, I would reuse what I sent / plan to send to @ucsandiego.2027). Though this account is supervised by a real person, many of its functions are automated, so if you could abide by the aforementioned rules, it would make the posting process a lot smoother. Thanks for your time, and again, congrats!")
         driver.click_messages()
         return None
