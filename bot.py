@@ -228,12 +228,14 @@ def try_to_post(account, account_name, checking_for_acceptance_letter):
     driver.scroll_to_end(element = driver.driver.find_element("xpath", "//div[@data-pagelet='IGDOpenMessageList']/div/div/div/div/div"), direction = -1, scalar = 0.5) # scroll up to load in DMs
     chats = get_chats()
     
+    # see if the person sent a collection instead of photos
+    try:
+        collection_sent = chats[::-1].index(("text", "Use latest app\nUse the latest version of the Instagram app to see this type of message")) in (0, 1)
+    except:
+        collection_sent = False
+        
     # determine caption
     caption = list(chat[1] for chat in chats if chat[0] == "text")
-    if "Use latest app\nUse the latest version of the Instagram app to see this type of message" in caption:
-        driver.send_message(text = "I know this sounds weird, but could you resend your pictures one-by-one? I use an old version of Instagram and I can't download the collection of pictures you sent. Thanks!")
-        driver.click_messages()
-        return None
 
     if "ERROR" in list(map(lambda x: x.upper(), caption)): # if any chat is ERROR, add to accounts concern and have me manually review it
         accounts_concern_writable.write(account + "\n")
@@ -253,16 +255,17 @@ def try_to_post(account, account_name, checking_for_acceptance_letter):
         driver.click_messages()
         return None
     
-    if acceptance_letter_present and len(media_filepaths) == 0: # if there is no media other than screenshot of acceptance letter
-        driver.send_message(text = "Thanks for sending in your acceptance letter. Congratulations! Please send 3-5 pictures of yourself + a bio, in that order (personally, I would reuse what I sent / plan to send to @ucsandiego.2027). Though this account is supervised by a real person, many of its functions are automated, so if you could abide by the aforementioned rules, it would make the posting process a lot smoother. Thanks for your time, and again, congrats!")
+    elif len(media_filepaths) == 0 and collection_sent: # if the person sent a collection (which I can't open)
+        driver.send_message(text = "I know this sounds weird, but could you resend your pictures one-by-one? I use an old version of Instagram and I can't download the collection of pictures you sent. Thanks!")
         driver.click_messages()
         return None
+        
     elif acceptance_letter_present and len(media_filepaths) == 0: # if there is no media other than screenshot of acceptance letter
         driver.send_message(text = "Thanks for sending in your acceptance letter. Congratulations! Please send 3-5 pictures of yourself + a bio, in that order (personally, I would reuse what I sent / plan to send to @ucsandiego.2027). Though this account is supervised by a real person, many of its functions are automated, so if you could abide by the aforementioned rules, it would make the posting process a lot smoother. Thanks for your time, and again, congrats!")
         driver.click_messages()
         return None
     
-    if not acceptance_letter_present and len(media_filepaths) == 0: # not checking_for_acceptance_letter is implied from first if statement
+    elif not acceptance_letter_present and len(media_filepaths) == 0: # not checking_for_acceptance_letter is implied from first if statement
         driver.click_messages()
         return None
     
@@ -279,12 +282,15 @@ def try_to_post(account, account_name, checking_for_acceptance_letter):
     driver.click_messages() # return to Messages pane
     driver.scroll_to_end(element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), direction = +1, scalar = 0.5)
     driver.scroll_to_end(element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), direction = -1, scalar = 0.1)
-    return_account = driver.driver.find_element("xpath", f"//span[text()='{account_name}']")
-    driver.scroll(a = 0, b = return_account.location["y"], element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), scalar = 0.5)
-    return_account.click()
-    del return_account
-    driver.wait(0.5, 1)
-    driver.send_message(text = "You information has been successfully posted. Please reach out if there are any issues.")
+    try:
+        return_account = driver.driver.find_element("xpath", f"//span[text()='{account_name}']")
+        driver.scroll(a = 0, b = return_account.location["y"], element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), scalar = 0.5)
+        return_account.click()
+        del return_account
+        driver.wait(0.5, 1)
+        driver.send_message(text = "You information has been successfully posted. Please reach out if there are any issues.")
+    except:
+        pass
     
     # write to file
     accounts_success_writable.write(account + "\n")
@@ -295,17 +301,20 @@ def try_to_post(account, account_name, checking_for_acceptance_letter):
 # protocol for if info fails to be posted for some reason
 def failure_protocol(account, account_name):
     # go to dms in case I'm not already there
-    driver.click_messages()
-    driver.scroll_to_end(element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), direction = +1, scalar = 0.5)
-    driver.scroll_to_end(element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), direction = -1, scalar = 0.1)
-    return_account = driver.driver.find_element("xpath", f"//span[text()='{account_name}']")
-    driver.scroll(a = 0, b = return_account.location["y"], element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), scalar = 0.5)
-    return_account.click()
-    del return_account
-    driver.wait(0.5, 1)
-        
-    # send error message
-    driver.send_message(text = "Unfortunately, there was an error in the posting process. I have notified the account administrator, who will deal with the issue personally as soon as possible.")
+    try:
+        driver.click_messages()
+        driver.scroll_to_end(element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), direction = +1, scalar = 0.5)
+        driver.scroll_to_end(element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), direction = -1, scalar = 0.1)
+        return_account = driver.driver.find_element("xpath", f"//span[text()='{account_name}']")
+        driver.scroll(a = 0, b = return_account.location["y"], element = driver.driver.find_element("xpath", messages_window_scrollable_xpath), scalar = 0.5)
+        return_account.click()
+        del return_account
+        driver.wait(0.5, 1)
+            
+        # send error message
+        driver.send_message(text = "Unfortunately, there was an error in the posting process. I have notified the account administrator, who will deal with the issue personally as soon as possible.")
+    except:
+        pass
     accounts_concern_writable.write(account + "\n")
     accounts_concern.add(account)
     
