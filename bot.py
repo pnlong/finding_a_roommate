@@ -21,6 +21,7 @@ from login import instagram_driver # my own class that logs into instagram for m
 import sys # for stdin arguments
 from os.path import exists # for checking if files exist
 from os import makedirs, listdir, remove, rmdir # for making and removing directories
+from cleantext import clean # for removing emojis from captions
 from urllib.request import urlretrieve # for downloading media from URL
 from PIL import Image # for OCR
 import pytesseract # for OCR
@@ -137,7 +138,7 @@ def decide_post(chats, media_directory = temporary_output): # media_directory is
     for i, file in enumerate(media):
         suffix = "jpg" if file[0] == "image" else "mp4" # determine filetype
         output_filepath = f"{media_directory}/{i}.{suffix}" # determine filepath
-        media_filepaths[i] = output_filepath # add filpath to media_filepaths
+        media_filepaths[i] = output_filepath # add filepath to media_filepaths
         urlretrieve(file[1], output_filepath) # download media to local device
         del suffix, output_filepath
     del media
@@ -236,7 +237,6 @@ def try_to_post(account, account_name, checking_for_acceptance_letter):
         
     # determine caption
     caption = list(chat[1] for chat in chats if chat[0] == "text")
-
     if "ERROR" in list(map(lambda x: x.upper(), caption)): # if any chat is ERROR, add to accounts concern and have me manually review it
         accounts_concern_writable.write(account + "\n")
         accounts_concern.add(account)
@@ -244,6 +244,7 @@ def try_to_post(account, account_name, checking_for_acceptance_letter):
         return None
     caption.sort(key = len) # sort caption by string length; the longest string is almost always the desired caption
     caption = caption[len(caption) - 1] # the longest string is the last string
+    caption = clean(caption, no_emoji = True)
     
     # decide what to post
     media_filepaths, acceptance_letter_present = decide_post(chats = chats)

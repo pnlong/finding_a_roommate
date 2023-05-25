@@ -17,6 +17,7 @@ from login import instagram_driver # my own class that logs into instagram for m
 import sys # for stdin arguments
 from os.path import exists, dirname # for checking if files exist and determining the output file
 
+
 # ARGUMENTS
 # sys.argv = ("intiate_contact.py", "/Users/philliplong/Desktop/Coding/chromedriver", "", "", "/Users/philliplong/Desktop/Coding/finding_a_roommate/outputs/accounts_followed.txt")
 driver_address = sys.argv[1] # driver_address
