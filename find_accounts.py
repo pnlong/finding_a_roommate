@@ -4,7 +4,7 @@
 
 # This script is meant to find other individuals who were admitted to muir by scraping the @ucsandiego.2027 Instagram account.
  
-# python ~/finding_a_roommate/find_accounts.py driver_address username password username_to_scrape output_directory
+# python ~/finding_a_roommate/find_accounts.py $driver_address $username $password $username_to_scrape $output_directory
 
 # driver_address = filepath to Selenium Chrome Web Driver, download at: https://chromedriver.chromium.org/downloads
 # username = Instagram username

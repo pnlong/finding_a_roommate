@@ -4,7 +4,7 @@
 
 # This script is meant to, given a list of accounts, initiate contact via DM to these accounts.
 
-# python ~/finding_a_roommate/initiate_contact.py driver_address username password accounts_to_dm
+# python ~/finding_a_roommate/initiate_contact.py $driver_address $username $password $accounts_to_dm
 
 # driver_address = filepath to Selenium Chrome Web Driver, download at: https://chromedriver.chromium.org/downloads
 # username = Instagram username
