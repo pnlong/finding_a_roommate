@@ -140,7 +140,18 @@ def decide_post(chats, media_directory = temporary_output): # media_directory is
         output_filepath = f"{media_directory}/{i}.{suffix}" # determine filepath
         media_filepaths[i] = output_filepath # add filepath to media_filepaths
         urlretrieve(file[1], output_filepath) # download media to local device
-        del suffix, output_filepath
+        image = Image.open(output_filepath)
+        dims = list(image.size)
+        if dims[0] > 1080: # width
+            k = 1080 / dims[0]
+            dims = [int(k * dims[0]), int(k * dims[1])]
+        if dims[1] > 1080: # height
+            k = 1080 / dims[1]
+            dims = [int(k * dims[0]), int(k * dims[1])]
+        if tuple(dims) != image.size:
+            image.resize(dims).save(output_filepath)
+        image.close()
+        del suffix, output_filepath, image, dims
     del media
     
     return media_filepaths, acceptance_letter_present
