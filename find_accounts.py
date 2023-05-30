@@ -156,7 +156,6 @@ while True:
     if date_of_post < stop_date: # if post before January 1, 2023, break the while loop
         if not stop_key_present:
             accounts_muir_writable.write(stop_key + "\n") # write
-            accounts_already_scraped_writable.write(stop_key + "\n")
         print("All relevant accounts parsed.")
         del date_of_post
         break # if there is no more posts, exit the while loop
