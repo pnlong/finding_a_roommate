@@ -143,8 +143,11 @@ while True:
         account = caption[len(caption) - caption[::-1].index("@"):]
         account = account.split()[0] # get last @
     else: # if there is no @, I can't DM them for a bio, so no point in including them on the account
-        next_post()
-        continue
+        try:
+            next_post()
+            continue
+        except:
+            break
 
     # CHECK DATE OF POST TO MAKE SURE POSTS ARE STILL RELEVANT
     date_of_post = driver.driver.find_element("xpath", "//time[@class='_a9ze _a9zf']").get_attribute("datetime")
@@ -160,8 +163,11 @@ while True:
     
     # SKIP ITERATION IF PROGRAM HAS ALREADY SCRAPED ACCOUNTS BEFORE 
     if account in accounts_already_scraped or len(account) < 3:
-        next_post()
-        continue
+        try:
+            next_post()
+            continue
+        except:
+            break
     else: # if not in accounts_already_scraped, add to accounts_already_scraped (and the account name is 3 or more characters)
         accounts_already_scraped.add(account)
         accounts_already_scraped_writable.write(account + "\n")
