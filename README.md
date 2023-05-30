@@ -52,6 +52,8 @@ where:
 - `username_to_scrape` is the username to the Instagram account that will be scraped for information.
 - `output_directory` is the filepath to the folder that `find_accounts.py` will output to.
 
+The program writes a `stop_key` to the output file `accounts_muir.txt` once it has parsed all accounts posted after January 1st, 2023. If the program detects the `stop_key` when importing `accounts_muir.txt`, it will only parse 7 days back in time as opposed to all the way back to the start of the year; this was implemented as a time-saving measure.
+
 
 ### *initiate_contact.py*
 As the name suggests, this program tries to DM Instagram accounts found using `find_accounts.py`, asking these accounts for permission to post on the new Muir account. Run with:
@@ -77,6 +79,7 @@ python ~/finding_a_roommate/bot.py driver_address username password output_direc
 where:
 
 `driver_address`, `username`, `password`, and `output_directory` are the same as for `find_accounts.py`. Reference `find_accounts.py` for those arguments.
+
 
 #### Packages
 
