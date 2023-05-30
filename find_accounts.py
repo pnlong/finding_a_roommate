@@ -70,7 +70,7 @@ accounts_followed_writable = open(accounts_followed_output, "a")
 
 # ADJUST STOP DATE
 stop_key_present = False # to avoid double writing stop_key
-if stop_key in accounts_muir or stop_key in accounts_already_scraped: # reset stop_date to a more sooner, quicker-to-scrape date
+if stop_key in accounts_muir: # reset stop_date to a more sooner, quicker-to-scrape date
     stop_key_present = True
     stop_date = datetime.now() - timedelta(days = d) # sooner date to stop scraping account sooner (a week ago)
 
