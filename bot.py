@@ -40,6 +40,8 @@ correct_filepath = lambda filepath: filepath[:len(filepath) - 1] if filepath.end
 # edit arguments
 output_directory = correct_filepath(output_directory) + "/"
 
+# maximum width (in pixels) for uploading to instagram
+instagram_max_px = 900
 
 # CREATE DRIVER AND LOGIN
 driver = instagram_driver(driver_address = driver_address, username = username, password = password) # create instance of chrome driver
@@ -142,11 +144,11 @@ def decide_post(chats, media_directory = temporary_output): # media_directory is
         urlretrieve(file[1], output_filepath) # download media to local device
         image = Image.open(output_filepath)
         dims = list(image.size)
-        if dims[0] > 1080: # width
-            k = 1080 / dims[0]
+        if dims[0] > instagram_max_px: # width
+            k = instagram_max_px / dims[0]
             dims = [int(k * dims[0]), int(k * dims[1])]
-        if dims[1] > 1080: # height
-            k = 1080 / dims[1]
+        if dims[1] > instagram_max_px: # height
+            k = instagram_max_px / dims[1]
             dims = [int(k * dims[0]), int(k * dims[1])]
         if tuple(dims) != image.size:
             image.resize(dims).save(output_filepath)
